@@ -1,0 +1,33 @@
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Linting caches
+.ruff_cache/
+.mypy_cache/
+
+# Generated experiment outputs (keep curated copies in docs/assets/)
+results/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
