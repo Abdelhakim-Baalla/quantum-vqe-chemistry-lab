@@ -1,0 +1,23 @@
+"""Unit tests for configuration validation and serialization."""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from quantum_vqe.config import DEFAULT_TOLERANCES, ExperimentConfig
+
+
+def test_default_configuration() -> None:
+    config = ExperimentConfig()
+    assert config.distance_angstrom == pytest.approx(0.735)
+    assert config.basis == "sto3g"
+    assert config.mapping == "parity"
+    assert config.two_qubit_reduction is True
+    assert config.optimizer == "L-BFGS-B"
+    assert config.tolerance == pytest.approx(DEFAULT_TOLERANCES["L-BFGS-B"])
+    assert config.expected_num_qubits(2) == 2
+    assert "0.735000000000" in config.geometry_angstrom
+
+
