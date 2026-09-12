@@ -40,3 +40,13 @@ _OPTIMIZER_ALIASES = {
 }
 
 
+def normalize_mapping(value: str) -> str:
+    """Return the canonical mapping name or raise ``ValueError``."""
+    normalized = str(value).strip().lower().replace("_", "-")
+    if normalized in {"jw", "jordanwigner"}:
+        normalized = "jordan-wigner"
+    if normalized not in MAPPINGS:
+        raise ValueError(f"mapping must be one of {MAPPINGS}, got {value!r}")
+    return normalized
+
+
