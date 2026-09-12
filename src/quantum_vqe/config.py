@@ -50,3 +50,11 @@ def normalize_mapping(value: str) -> str:
     return normalized
 
 
+def normalize_optimizer(value: str) -> str:
+    """Return the canonical SciPy optimizer name or raise ``ValueError``."""
+    normalized = str(value).strip().lower()
+    if normalized not in _OPTIMIZER_ALIASES:
+        raise ValueError(f"optimizer must be one of {OPTIMIZERS}, got {value!r}")
+    return _OPTIMIZER_ALIASES[normalized]
+
+
