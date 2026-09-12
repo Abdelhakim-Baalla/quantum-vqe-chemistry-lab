@@ -58,3 +58,12 @@ def normalize_optimizer(value: str) -> str:
     return _OPTIMIZER_ALIASES[normalized]
 
 
+def _positive_finite(name: str, value: float) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{name} must be a number, got {value!r}")
+    value = float(value)
+    if not math.isfinite(value) or value <= 0.0:
+        raise ValueError(f"{name} must be finite and > 0, got {value!r}")
+    return value
+
+
