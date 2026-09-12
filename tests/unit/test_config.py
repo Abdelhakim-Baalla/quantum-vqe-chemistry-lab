@@ -21,3 +21,9 @@ def test_default_configuration() -> None:
     assert "0.735000000000" in config.geometry_angstrom
 
 
+def test_jordan_wigner_resolves_to_no_reduction() -> None:
+    config = ExperimentConfig(mapping="jordan-wigner")
+    assert config.two_qubit_reduction is False
+    assert config.expected_num_qubits(2) == 4
+
+
