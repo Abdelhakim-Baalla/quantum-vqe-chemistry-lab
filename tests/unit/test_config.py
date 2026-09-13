@@ -27,3 +27,8 @@ def test_jordan_wigner_resolves_to_no_reduction() -> None:
     assert config.expected_num_qubits(2) == 4
 
 
+def test_jordan_wigner_rejects_two_qubit_reduction() -> None:
+    with pytest.raises(ValueError, match="two-qubit"):
+        ExperimentConfig(mapping="jordan-wigner", two_qubit_reduction=True)
+
+
