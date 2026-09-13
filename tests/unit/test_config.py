@@ -32,3 +32,10 @@ def test_jordan_wigner_rejects_two_qubit_reduction() -> None:
         ExperimentConfig(mapping="jordan-wigner", two_qubit_reduction=True)
 
 
+def test_mapping_and_optimizer_aliases() -> None:
+    config = ExperimentConfig(mapping="jordan_wigner", optimizer="bfgs")
+    assert config.mapping == "jordan-wigner"
+    assert config.optimizer == "BFGS"
+    assert config.tolerance == pytest.approx(DEFAULT_TOLERANCES["BFGS"])
+
+
