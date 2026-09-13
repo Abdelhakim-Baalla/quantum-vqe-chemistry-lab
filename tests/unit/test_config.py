@@ -82,3 +82,6 @@ def test_configuration_dict_roundtrip() -> None:
     assert ExperimentConfig.from_dict(payload) == config
 
 
+def test_configuration_from_dict_rejects_unknown_fields() -> None:
+    with pytest.raises(ValueError, match="unknown"):
+        ExperimentConfig.from_dict({"distance_angstrom": 0.735, "not_a_field": 1})
