@@ -69,3 +69,16 @@ def test_invalid_configurations_raise(overrides: dict[str, object]) -> None:
         ExperimentConfig(**overrides)
 
 
+def test_configuration_dict_roundtrip() -> None:
+    config = ExperimentConfig(
+        distance_angstrom=0.8,
+        basis="sto3g",
+        optimizer="SLSQP",
+        initial_point="random",
+        seed=123,
+    )
+    payload = config.to_dict()
+    assert json.loads(json.dumps(payload)) == payload
+    assert ExperimentConfig.from_dict(payload) == config
+
+
