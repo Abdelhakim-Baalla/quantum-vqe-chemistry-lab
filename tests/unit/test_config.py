@@ -39,3 +39,33 @@ def test_mapping_and_optimizer_aliases() -> None:
     assert config.tolerance == pytest.approx(DEFAULT_TOLERANCES["BFGS"])
 
 
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"distance_angstrom": 0.0},
+        {"distance_angstrom": -0.5},
+        {"distance_angstrom": float("nan")},
+        {"distance_angstrom": float("inf")},
+        {"basis": "   "},
+        {"charge": 1.5},
+        {"spin": 1},
+        {"spin": -2},
+        {"mapping": "bogus"},
+        {"two_qubit_reduction": "yes"},
+        {"optimizer": "adam"},
+        {"max_iterations": 0},
+        {"max_iterations": 100_001},
+        {"tolerance": 0.0},
+        {"tolerance": -1e-6},
+        {"initial_point": "middle"},
+        {"seed": -1},
+        {"energy_accuracy_target": 0.0},
+        {"variational_tolerance": -1e-8},
+        {"reference_tolerance": 0.0},
+    ],
+)
+def test_invalid_configurations_raise(overrides: dict[str, object]) -> None:
+    with pytest.raises(ValueError):
+        ExperimentConfig(**overrides)
+
+
