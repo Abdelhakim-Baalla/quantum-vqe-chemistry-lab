@@ -61,3 +61,21 @@ class ExactDiagonalization:
         }
 
 
+@dataclass(frozen=True)
+class EnergyComparison:
+    """Signed and absolute comparison of a variational and exact energy."""
+
+    vqe_energy: float
+    exact_energy: float
+    signed_gap: float
+    absolute_error: float
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "vqe_energy": self.vqe_energy,
+            "exact_energy": self.exact_energy,
+            "signed_gap": self.signed_gap,
+            "absolute_error": self.absolute_error,
+        }
+
+
