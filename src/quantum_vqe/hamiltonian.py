@@ -39,3 +39,25 @@ class HermiticityReport:
         }
 
 
+@dataclass(frozen=True)
+class ExactDiagonalization:
+    """Ground-state result from exact diagonalization of a qubit Hamiltonian."""
+
+    ground_energy: float
+    first_excited_energy: float | None
+    gap: float | None
+    dimension: int
+    method: str
+    wall_time_s: float
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "ground_energy": self.ground_energy,
+            "first_excited_energy": self.first_excited_energy,
+            "gap": self.gap,
+            "dimension": self.dimension,
+            "method": self.method,
+            "wall_time_s": self.wall_time_s,
+        }
+
+
