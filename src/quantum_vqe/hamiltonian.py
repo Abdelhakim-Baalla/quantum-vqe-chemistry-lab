@@ -112,3 +112,51 @@ def check_hermitian(operator: SparsePauliOp, *, atol: float = 1e-10) -> Hermitic
     )
 
 
+def exact_ground_state(
+    operator: SparsePauliOp, *, dense_threshold: int = 1024
+) -> ExactDiagonalization:
+    """Diagonalize a qubit Hamiltonian exactly.
+
+    Small Hamiltonians use dense ``numpy.linalg.eigvalsh``; larger ones use
+    ``scipy.sparse.linalg.eigsh``.  The H2 experiments use only 2 or 4 qubits,
+    so the dense path is exercised.
+    """
+    if not isinstance(operator, SparsePauliOp):
+        raise TypeError(f"operator must be a SparsePauliOp, got {type(operator).__name__}")
+    if operator.num_qubits < 1:
+        raise OperatorError("operator must act on at least one qubit")
+
+    dimension = 2**operator.num_qubits
+    started = time.perf_counter()
+
+    if dimension <= dense_threshold:
+        matrix = operator.to_matrix(sparse=False)
+        eigenvalues = np.linalg.eigvalsh(matrix)
+        method = "dense_eigvalsh"
+    else:
+        from scipy.sparse.linalg import eigsh
+
+        matrix = operator.to_matrix(sparse=True).tocsc()
+        k = min(2, dimension - 1)
+        eigenvalues = eigsh(matrix, k=k, which="SA", return_eigenvectors=False)
+        eigenvalues = np.sort(eigenvalues)
+        method = "sparse_eigsh"
+
+    if eigenvalues.size == 0:
+        raise OperatorError("diagonalization returned no eigenvalues")
+    ground = float(eigenvalues[0])
+    first_excited = float(eigenvalues[1]) if eigenvalues.size > 1 else None
+    gap = (first_excited - ground) if first_excited is not None else None
+    if not math.isfinite(ground):
+        raise OperatorError("diagonalization returned a non-finite ground energy")
+
+    return ExactDiagonalization(
+        ground_energy=ground,
+        first_excited_energy=first_excited,
+        gap=gap,
+        dimension=dimension,
+        method=method,
+        wall_time_s=time.perf_counter() - started,
+    )
+
+
