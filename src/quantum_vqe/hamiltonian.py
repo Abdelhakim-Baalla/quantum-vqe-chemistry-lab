@@ -160,3 +160,28 @@ def exact_ground_state(
     )
 
 
+def expectation_from_statevector(
+    circuit: QuantumCircuit,
+    operator: SparsePauliOp,
+    parameter_values: Sequence[float] | None = None,
+) -> float:
+    """Independent expectation-value calculation via exact statevector.
+
+    This is intentionally separate from the estimator primitive so tests can
+    validate the VQE cost function against a second Qiskit code path.
+    """
+    if circuit.num_qubits != operator.num_qubits:
+        raise ValueError(
+            f"circuit/Hamiltonian qubit mismatch: {circuit.num_qubits} != {operator.num_qubits}"
+        )
+    if parameter_values is not None:
+        values = np.asarray(parameter_values, dtype=float).reshape(-1)
+        if values.size != circuit.num_parameters:
+            raise ValueError(
+                f"expected {circuit.num_parameters} parameter values, got {values.size}"
+            )
+        circuit = circuit.assign_parameters(values)
+    state = Statevector.from_instruction(circuit)
+    return float(np.real(state.expectation_value(operator)))
+
+
