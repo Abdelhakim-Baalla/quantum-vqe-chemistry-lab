@@ -79,3 +79,36 @@ class EnergyComparison:
         }
 
 
+def check_hermitian(operator: SparsePauliOp, *, atol: float = 1e-10) -> HermiticityReport:
+    """Check Hermiticity numerically.
+
+    For small operators (up to 12 qubits) the full matrix is constructed and
+    compared with its conjugate transpose.  Larger operators fall back to
+    checking that all Pauli coefficients are real.
+    """
+    if not isinstance(operator, SparsePauliOp):
+        raise TypeError(f"operator must be a SparsePauliOp, got {type(operator).__name__}")
+    if operator.num_qubits < 1:
+        raise OperatorError("operator must act on at least one qubit")
+    if atol <= 0:
+        raise ValueError("atol must be > 0")
+
+    if operator.num_qubits <= 12:
+        matrix = operator.to_matrix(sparse=False)
+        asymmetry = matrix - matrix.conj().T
+        max_asymmetry = float(np.max(np.abs(asymmetry)))
+        method = "dense_matrix_vs_adjoint"
+    else:
+        max_asymmetry = float(np.max(np.abs(np.imag(operator.coeffs))))
+        method = "imaginary_part_of_pauli_coefficients"
+
+    return HermiticityReport(
+        hermitian=bool(max_asymmetry <= atol),
+        max_asymmetry=max_asymmetry,
+        num_qubits=operator.num_qubits,
+        num_terms=len(operator),
+        method=method,
+        tolerance=atol,
+    )
+
+
