@@ -202,3 +202,15 @@ def compare_energies(vqe_energy: float, exact_energy: float) -> EnergyComparison
     )
 
 
+def pauli_term_records(operator: SparsePauliOp) -> list[dict[str, Any]]:
+    """Serialize Pauli labels and coefficients for a result file."""
+    records: list[dict[str, Any]] = []
+    for label, coefficient in zip(operator.paulis.to_labels(), operator.coeffs, strict=True):
+        records.append(
+            {
+                "pauli": str(label),
+                "coefficient": float(np.real(coefficient)),
+                "coefficient_imag": float(np.imag(coefficient)),
+            }
+        )
+    return records
