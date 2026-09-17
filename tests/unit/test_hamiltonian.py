@@ -27,3 +27,10 @@ def test_hermitian_operator_passes() -> None:
     assert report.num_terms == 2
 
 
+def test_non_hermitian_operator_fails() -> None:
+    operator = SparsePauliOp.from_list([("X", 1.0j)])
+    report = check_hermitian(operator)
+    assert report.hermitian is False
+    assert report.max_asymmetry > 1e-3
+
+
