@@ -185,3 +185,20 @@ def expectation_from_statevector(
     return float(np.real(state.expectation_value(operator)))
 
 
+def compare_energies(vqe_energy: float, exact_energy: float) -> EnergyComparison:
+    """Compute the absolute error and signed variational gap in Hartree."""
+    for name, value in (("vqe_energy", vqe_energy), ("exact_energy", exact_energy)):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise TypeError(f"{name} must be a real number")
+        if not math.isfinite(float(value)):
+            raise ValueError(f"{name} must be finite")
+    vqe = float(vqe_energy)
+    exact = float(exact_energy)
+    return EnergyComparison(
+        vqe_energy=vqe,
+        exact_energy=exact,
+        signed_gap=vqe - exact,
+        absolute_error=abs(vqe - exact),
+    )
+
+
