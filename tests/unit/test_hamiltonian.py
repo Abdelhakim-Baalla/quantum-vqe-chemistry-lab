@@ -68,3 +68,18 @@ def test_compare_energies_rejects_non_finite(value: float) -> None:
         compare_energies(value, -1.0)
 
 
+def test_expectation_from_statevector_matches_analytic_value() -> None:
+    theta = Parameter("theta")
+    circuit = QuantumCircuit(1)
+    circuit.ry(theta, 0)
+    operator = SparsePauliOp.from_list([("Z", 1.0)])
+
+    value_zero = expectation_from_statevector(circuit, operator, [0.0])
+    value_pi = expectation_from_statevector(circuit, operator, [math.pi])
+    value_half = expectation_from_statevector(circuit, operator, [0.5])
+
+    assert value_zero == pytest.approx(1.0, abs=1e-12)
+    assert value_pi == pytest.approx(-1.0, abs=1e-12)
+    assert value_half == pytest.approx(math.cos(0.5), abs=1e-12)
+
+
