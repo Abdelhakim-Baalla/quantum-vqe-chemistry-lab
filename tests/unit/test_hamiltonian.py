@@ -83,3 +83,13 @@ def test_expectation_from_statevector_matches_analytic_value() -> None:
     assert value_half == pytest.approx(math.cos(0.5), abs=1e-12)
 
 
+def test_expectation_from_statevector_validates_parameters() -> None:
+    theta = Parameter("theta")
+    circuit = QuantumCircuit(1)
+    circuit.ry(theta, 0)
+    operator = SparsePauliOp.from_list([("Z", 1.0)])
+
+    with pytest.raises(ValueError, match="parameter"):
+        expectation_from_statevector(circuit, operator, [0.0, 1.0])
+
+
