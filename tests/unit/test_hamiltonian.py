@@ -52,3 +52,13 @@ def test_exact_ground_state_of_two_qubit_operator() -> None:
     assert result.dimension == 4
 
 
+def test_compare_energies() -> None:
+    comparison = compare_energies(-0.9, -1.0)
+    assert comparison.absolute_error == pytest.approx(0.1)
+    assert comparison.signed_gap == pytest.approx(0.1)
+
+    undershoot = compare_energies(-1.0 - 1e-12, -1.0)
+    assert undershoot.signed_gap < 0.0
+    assert undershoot.absolute_error == pytest.approx(1e-12)
+
+
