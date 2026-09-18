@@ -62,3 +62,9 @@ def test_compare_energies() -> None:
     assert undershoot.absolute_error == pytest.approx(1e-12)
 
 
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+def test_compare_energies_rejects_non_finite(value: float) -> None:
+    with pytest.raises(ValueError):
+        compare_energies(value, -1.0)
+
+
