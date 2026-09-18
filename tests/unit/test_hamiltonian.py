@@ -93,3 +93,10 @@ def test_expectation_from_statevector_validates_parameters() -> None:
         expectation_from_statevector(circuit, operator, [0.0, 1.0])
 
 
+def test_pauli_term_records() -> None:
+    operator = SparsePauliOp.from_list([("II", -0.5), ("ZZ", 0.25)])
+    records = pauli_term_records(operator)
+    assert [record["pauli"] for record in records] == ["II", "ZZ"]
+    assert records[0]["coefficient"] == pytest.approx(-0.5)
+    assert records[1]["coefficient"] == pytest.approx(0.25)
+    assert all(record["coefficient_imag"] == pytest.approx(0.0) for record in records)
