@@ -44,3 +44,11 @@ def test_exact_ground_state_of_pauli_z() -> None:
     assert result.wall_time_s >= 0.0
 
 
+def test_exact_ground_state_of_two_qubit_operator() -> None:
+    # H = -0.5 * (Z0 + Z1): ground state |00> has energy -1.
+    result = exact_ground_state(SparsePauliOp.from_list([("IZ", -0.5), ("ZI", -0.5)]))
+    assert result.ground_energy == pytest.approx(-1.0)
+    assert result.first_excited_energy == pytest.approx(0.0)
+    assert result.dimension == 4
+
+
