@@ -47,3 +47,29 @@ class ChemistryData:
     chemistry_wall_time_s: float
 
 
+def _extract_electronic_hamiltonian(problem: ElectronicStructureProblem) -> FermionicOp:
+    """Extract the electronic Hamiltonian from Qiskit Nature's operator bundle.
+
+    Qiskit Nature 0.8 returns ``(electronic_hamiltonian, auxiliary_ops)`` from
+    ``second_q_ops()``.  Older/newer releases have used a dictionary, so this
+    helper keeps the experiment readable across those layouts.
+    """
+    operators = problem.second_q_ops()
+    if isinstance(operators, tuple):
+        candidate = operators[0]
+    elif isinstance(operators, dict):
+        if "ElectronicEnergy" in operators:
+            candidate = operators["ElectronicEnergy"]
+        else:
+            candidate = next(iter(operators.values()))
+    else:
+        candidate = operators
+
+    if not isinstance(candidate, FermionicOp):
+        raise ChemistryError(
+            "Qiskit Nature did not return a FermionicOp as the electronic Hamiltonian; "
+            f"got {type(candidate).__name__}"
+        )
+    return candidate
+
+
