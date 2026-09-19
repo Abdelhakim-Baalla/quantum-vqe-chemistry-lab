@@ -16,3 +16,8 @@ class FakeProblem:
         return self._operators
 
 
+def test_extract_from_tuple() -> None:
+    operator = FermionicOp({"+_0": 1.0})
+    assert _extract_electronic_hamiltonian(FakeProblem((operator, {}))) is operator
+
+
