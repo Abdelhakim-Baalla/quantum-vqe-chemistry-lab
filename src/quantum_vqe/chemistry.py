@@ -27,3 +27,23 @@ class ChemistryError(RuntimeError):
     """Raised when molecular integrals or the qubit Hamiltonian cannot be built."""
 
 
+@dataclass
+class ChemistryData:
+    """All scientific objects needed by one VQE experiment."""
+
+    problem: ElectronicStructureProblem
+    fermionic_hamiltonian: FermionicOp
+    qubit_hamiltonian: SparsePauliOp
+    mapper: QubitMapper
+    hf_circuit: QuantumCircuit
+    ansatz: QuantumCircuit
+    nuclear_repulsion_energy: float
+    num_spatial_orbitals: int
+    num_particles: tuple[int, int]
+    num_spin_orbitals: int
+    num_qubits: int
+    mapping_description: str
+    two_qubit_reduction: bool
+    chemistry_wall_time_s: float
+
+
