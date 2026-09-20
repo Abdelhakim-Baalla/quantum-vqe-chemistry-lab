@@ -28,3 +28,19 @@ class VQEError(RuntimeError):
     """Raised when the VQE loop cannot evaluate or optimize the ansatz."""
 
 
+@dataclass(frozen=True)
+class EnergyEvaluation:
+    """One call to the VQE cost function."""
+
+    evaluation: int
+    energy: float
+    parameters: tuple[float, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "evaluation": self.evaluation,
+            "energy_hartree": self.energy,
+            "parameters": list(self.parameters),
+        }
+
+
