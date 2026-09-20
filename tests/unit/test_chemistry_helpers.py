@@ -31,3 +31,6 @@ def test_extract_from_dict_without_named_key() -> None:
     assert _extract_electronic_hamiltonian(FakeProblem({"other": operator})) is operator
 
 
+def test_extract_rejects_non_fermionic_operator() -> None:
+    with pytest.raises(ChemistryError, match="FermionicOp"):
+        _extract_electronic_hamiltonian(FakeProblem((object(),)))
