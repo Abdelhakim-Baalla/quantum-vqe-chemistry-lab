@@ -21,3 +21,8 @@ def test_extract_from_tuple() -> None:
     assert _extract_electronic_hamiltonian(FakeProblem((operator, {}))) is operator
 
 
+def test_extract_from_dict_with_named_key() -> None:
+    operator = FermionicOp({"+_0": 1.0})
+    assert _extract_electronic_hamiltonian(FakeProblem({"ElectronicEnergy": operator})) is operator
+
+
