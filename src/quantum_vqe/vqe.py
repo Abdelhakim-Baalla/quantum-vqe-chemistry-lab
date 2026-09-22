@@ -92,3 +92,23 @@ class VQEResult:
         }
 
 
+def make_initial_point(mode: str, num_parameters: int, seed: int) -> np.ndarray:
+    """Return a deterministic initial point.
+
+    ``"hf"`` starts at all-zero UCCSD angles, which prepares the Hartree-Fock
+    reference state.  ``"random"`` samples small angles uniformly from
+    ``[-0.05, 0.05]`` using the supplied seed.
+    """
+    if num_parameters < 1:
+        raise ValueError("num_parameters must be >= 1")
+    normalized = str(mode).strip().lower()
+    if normalized == "hf":
+        return np.zeros(num_parameters, dtype=float)
+    if normalized == "random":
+        if seed < 0:
+            raise ValueError("seed must be non-negative")
+        rng = np.random.default_rng(seed)
+        return rng.uniform(-0.05, 0.05, size=num_parameters)
+    raise ValueError(f"initial point mode must be 'hf' or 'random', got {mode!r}")
+
+
