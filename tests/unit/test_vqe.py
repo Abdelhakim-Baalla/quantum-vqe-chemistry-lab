@@ -28,3 +28,32 @@ def test_vqe_evaluate_matches_statevector_expectation(
     assert value == pytest.approx(math.cos(0.37), abs=1e-12)
 
 
+def test_vqe_optimizes_one_qubit_hamiltonian(
+    one_qubit_hamiltonian: SparsePauliOp,
+    one_qubit_ansatz: tuple[QuantumCircuit, Parameter],
+) -> None:
+    ansatz, _ = one_qubit_ansatz
+    vqe = VQE(
+        StatevectorEstimator(),
+        ansatz,
+        one_qubit_hamiltonian,
+        optimizer="L-BFGS-B",
+        max_iterations=200,
+        tolerance=1e-9,
+    )
+    result = vqe.minimize([0.2])
+
+    assert result.converged is True
+    assert result.success is True
+    assert result.energy == pytest.approx(-1.0, abs=1e-8)
+    assert len(result.parameters) == 1
+    assert result.parameters[0] == pytest.approx(math.pi, abs=1e-5)
+    assert result.initial_energy == pytest.approx(math.cos(0.2), abs=1e-12)
+    assert result.nfev >= 1
+    assert result.energy_evaluations == len(result.history)
+    assert result.history
+    assert all(math.isfinite(entry.energy) for entry in result.history)
+    assert all(len(entry.parameters) == 1 for entry in result.history)
+    assert min(entry.energy for entry in result.history) == pytest.approx(result.energy)
+
+
