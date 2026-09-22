@@ -112,3 +112,157 @@ def make_initial_point(mode: str, num_parameters: int, seed: int) -> np.ndarray:
     raise ValueError(f"initial point mode must be 'hf' or 'random', got {mode!r}")
 
 
+class VQE:
+    """Minimize ``<psi(theta)|H|psi(theta)>`` with a Qiskit estimator."""
+
+    def __init__(
+        self,
+        estimator: StatevectorEstimator,
+        ansatz: QuantumCircuit,
+        hamiltonian: SparsePauliOp,
+        *,
+        optimizer: str = "L-BFGS-B",
+        max_iterations: int = 500,
+        tolerance: float | None = None,
+    ) -> None:
+        if ansatz.num_qubits != hamiltonian.num_qubits:
+            raise ValueError(
+                "ansatz/Hamiltonian qubit mismatch: "
+                f"{ansatz.num_qubits} != {hamiltonian.num_qubits}"
+            )
+        if ansatz.num_parameters < 1:
+            raise ValueError("ansatz must have at least one variational parameter")
+        if max_iterations < 1:
+            raise ValueError("max_iterations must be >= 1")
+
+        optimizer = normalize_optimizer(optimizer)
+        if tolerance is None:
+            tolerance = DEFAULT_TOLERANCES[optimizer]
+        if not math.isfinite(float(tolerance)) or tolerance <= 0:
+            raise ValueError("tolerance must be finite and > 0")
+
+        self.estimator = estimator
+        self.ansatz = ansatz
+        self.hamiltonian = hamiltonian
+        self.optimizer = optimizer
+        self.max_iterations = int(max_iterations)
+        self.tolerance = float(tolerance)
+        self.history: list[EnergyEvaluation] = []
+
+    @property
+    def num_parameters(self) -> int:
+        return self.ansatz.num_parameters
+
+    def evaluate(self, parameters: Sequence[float], *, record: bool = False) -> float:
+        """Evaluate the Hamiltonian expectation value in Hartree."""
+        values = np.asarray(parameters, dtype=float).reshape(-1)
+        if values.size != self.num_parameters:
+            raise ValueError(f"expected {self.num_parameters} parameter values, got {values.size}")
+        if not np.all(np.isfinite(values)):
+            raise ValueError("parameter values must be finite")
+
+        try:
+            # Qiskit's PauliEvolutionGate builds its matrix with
+            # scipy.sparse.linalg.expm, which emits a harmless CSC-format
+            # efficiency warning.  Suppress only that warning around the
+            # primitive call.
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=SparseEfficiencyWarning)
+                job = self.estimator.run([(self.ansatz, self.hamiltonian, values)])
+                result = job.result()
+            energies = np.asarray(result[0].data.evs).reshape(-1)
+        except Exception as exc:
+            raise VQEError(f"estimator evaluation failed: {exc}") from exc
+
+        if energies.size != 1:
+            raise VQEError(f"expected one expectation value, got {energies.size}")
+        energy = float(np.real(energies[0]))
+        if not math.isfinite(energy):
+            raise VQEError(f"estimator returned a non-finite energy: {energy!r}")
+
+        if record:
+            self.history.append(
+                EnergyEvaluation(
+                    evaluation=len(self.history),
+                    energy=energy,
+                    parameters=tuple(float(value) for value in values),
+                )
+            )
+        return energy
+
+    def _objective(self, parameters: np.ndarray) -> float:
+        return self.evaluate(parameters, record=True)
+
+    def _scipy_options(self) -> dict[str, Any]:
+        options: dict[str, Any] = {
+            "maxiter": self.max_iterations,
+        }
+        if self.optimizer in {"BFGS", "L-BFGS-B"}:
+            options["gtol"] = self.tolerance
+        elif self.optimizer == "SLSQP":
+            options["ftol"] = self.tolerance
+        elif self.optimizer == "COBYLA":
+            options["tol"] = self.tolerance
+        elif self.optimizer == "Nelder-Mead":
+            options["xatol"] = self.tolerance
+            options["fatol"] = self.tolerance
+            options["adaptive"] = True
+        return options
+
+    def minimize(self, initial_point: Sequence[float] | None = None) -> VQEResult:
+        """Run the optimizer and return a fully populated result."""
+        if initial_point is None:
+            x0 = np.zeros(self.num_parameters, dtype=float)
+        else:
+            x0 = np.asarray(initial_point, dtype=float).reshape(-1)
+        if x0.size != self.num_parameters:
+            raise ValueError(f"expected {self.num_parameters} initial parameters, got {x0.size}")
+        if not np.all(np.isfinite(x0)):
+            raise ValueError("initial parameters must be finite")
+
+        self.history = []
+        started = time.perf_counter()
+        try:
+            result = minimize(
+                self._objective,
+                x0,
+                method=self.optimizer,
+                options=self._scipy_options(),
+            )
+        except Exception as exc:
+            raise VQEError(f"optimizer '{self.optimizer}' failed: {exc}") from exc
+        wall_time = time.perf_counter() - started
+
+        energy = float(result.fun)
+        if not math.isfinite(energy):
+            raise VQEError(f"optimizer returned a non-finite energy: {energy!r}")
+        parameters = np.asarray(result.x, dtype=float).reshape(-1)
+        if parameters.size != self.num_parameters:
+            raise VQEError(
+                f"optimizer returned {parameters.size} parameters, expected {self.num_parameters}"
+            )
+        if not np.all(np.isfinite(parameters)):
+            raise VQEError("optimizer returned non-finite parameters")
+
+        # SciPy evaluates x0 before iterating; fall back defensively if it did not.
+        initial_energy = self.history[0].energy if self.history else self.evaluate(x0)
+
+        converged = bool(result.success)
+        return VQEResult(
+            energy=energy,
+            initial_energy=initial_energy,
+            parameters=tuple(float(value) for value in parameters),
+            initial_parameters=tuple(float(value) for value in x0),
+            converged=converged,
+            success=converged,
+            message=str(result.message),
+            status_code=int(getattr(result, "status", -1)),
+            nfev=int(result.nfev),
+            nit=getattr(result, "nit", None),
+            njev=getattr(result, "njev", None),
+            history=list(self.history),
+            wall_time_s=wall_time,
+            optimizer=self.optimizer,
+            tolerance=self.tolerance,
+            max_iterations=self.max_iterations,
+        )
