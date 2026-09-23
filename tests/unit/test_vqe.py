@@ -57,3 +57,16 @@ def test_vqe_optimizes_one_qubit_hamiltonian(
     assert min(entry.energy for entry in result.history) == pytest.approx(result.energy)
 
 
+def test_vqe_history_records_parameters(
+    one_qubit_hamiltonian: SparsePauliOp,
+    one_qubit_ansatz: tuple[QuantumCircuit, Parameter],
+) -> None:
+    ansatz, _ = one_qubit_ansatz
+    vqe = VQE(StatevectorEstimator(), ansatz, one_qubit_hamiltonian)
+    vqe.minimize([0.1])
+    serialized = [entry.to_dict() for entry in vqe.history]
+    assert serialized
+    assert serialized[0]["evaluation"] == 0
+    assert serialized[0]["parameters"] == [pytest.approx(0.1)]
+
+
