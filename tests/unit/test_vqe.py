@@ -70,3 +70,15 @@ def test_vqe_history_records_parameters(
     assert serialized[0]["parameters"] == [pytest.approx(0.1)]
 
 
+def test_vqe_rejects_wrong_parameter_count(
+    one_qubit_hamiltonian: SparsePauliOp,
+    one_qubit_ansatz: tuple[QuantumCircuit, Parameter],
+) -> None:
+    ansatz, _ = one_qubit_ansatz
+    vqe = VQE(StatevectorEstimator(), ansatz, one_qubit_hamiltonian)
+    with pytest.raises(ValueError, match="expected 1"):
+        vqe.evaluate([0.0, 1.0])
+    with pytest.raises(ValueError, match="expected 1"):
+        vqe.minimize([0.0, 1.0])
+
+
