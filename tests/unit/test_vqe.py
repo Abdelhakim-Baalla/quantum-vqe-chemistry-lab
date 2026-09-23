@@ -92,3 +92,10 @@ def test_vqe_rejects_non_finite_parameters(
         vqe.evaluate([float("nan")])
 
 
+def test_vqe_rejects_qubit_mismatch(one_qubit_ansatz: tuple[QuantumCircuit, Parameter]) -> None:
+    ansatz, _ = one_qubit_ansatz
+    two_qubit_hamiltonian = SparsePauliOp.from_list([("IZ", 1.0)])
+    with pytest.raises(ValueError, match="mismatch"):
+        VQE(StatevectorEstimator(), ansatz, two_qubit_hamiltonian)
+
+
