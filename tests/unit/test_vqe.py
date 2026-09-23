@@ -99,3 +99,33 @@ def test_vqe_rejects_qubit_mismatch(one_qubit_ansatz: tuple[QuantumCircuit, Para
         VQE(StatevectorEstimator(), ansatz, two_qubit_hamiltonian)
 
 
+def test_vqe_reflects_optimizer_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    one_qubit_hamiltonian: SparsePauliOp,
+    one_qubit_ansatz: tuple[QuantumCircuit, Parameter],
+) -> None:
+    ansatz, _ = one_qubit_ansatz
+    vqe = VQE(StatevectorEstimator(), ansatz, one_qubit_hamiltonian)
+
+    def fake_minimize(function, x0, *, method, options):  # noqa: ANN001
+        function(np.asarray(x0, dtype=float))
+        return SimpleNamespace(
+            fun=0.5,
+            x=np.asarray([0.1]),
+            success=False,
+            message="iteration limit reached",
+            status=1,
+            nfev=1,
+            nit=1,
+            njev=0,
+        )
+
+    monkeypatch.setattr("quantum_vqe.vqe.minimize", fake_minimize)
+    result = vqe.minimize([0.1])
+
+    assert result.converged is False
+    assert result.success is False
+    assert "iteration limit" in result.message
+    assert result.energy == pytest.approx(0.5)
+
+
