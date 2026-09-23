@@ -82,3 +82,13 @@ def test_vqe_rejects_wrong_parameter_count(
         vqe.minimize([0.0, 1.0])
 
 
+def test_vqe_rejects_non_finite_parameters(
+    one_qubit_hamiltonian: SparsePauliOp,
+    one_qubit_ansatz: tuple[QuantumCircuit, Parameter],
+) -> None:
+    ansatz, _ = one_qubit_ansatz
+    vqe = VQE(StatevectorEstimator(), ansatz, one_qubit_hamiltonian)
+    with pytest.raises(ValueError, match="finite"):
+        vqe.evaluate([float("nan")])
+
+
