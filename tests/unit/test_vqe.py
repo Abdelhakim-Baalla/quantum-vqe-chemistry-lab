@@ -129,3 +129,18 @@ def test_vqe_reflects_optimizer_failure(
     assert result.energy == pytest.approx(0.5)
 
 
+def test_make_initial_point_modes() -> None:
+    hf = make_initial_point("hf", 4, seed=1)
+    assert np.array_equal(hf, np.zeros(4))
+
+    random_a = make_initial_point("random", 5, seed=42)
+    random_b = make_initial_point("random", 5, seed=42)
+    random_c = make_initial_point("random", 5, seed=43)
+    assert random_a.shape == (5,)
+    assert np.array_equal(random_a, random_b)
+    assert not np.array_equal(random_a, random_c)
+    assert np.all(random_a >= -0.05)
+    assert np.all(random_a <= 0.05)
+
+    with pytest.raises(ValueError, match="initial point"):
+        make_initial_point("middle", 2, seed=1)
