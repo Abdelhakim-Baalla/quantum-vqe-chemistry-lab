@@ -228,3 +228,59 @@ This is an independent check of the integrals, the mapping and the energy
 bookkeeping. It is not a check against experimental chemistry: STO-3G is a
 minimal basis and is not quantitatively accurate for real H₂.
 
+## 7. Checks and status
+
+A run is labeled `success` only if **no performed check is `False`**. A check
+value of `None` means "not applicable" and is neither a pass nor a failure.
+The full set of checks is:
+
+| Check | Definition | Tolerance |
+| --- | --- | ---: |
+| `hamiltonian_is_hermitian` | dense matrix equals its conjugate transpose | `1e-10` |
+| `ansatz_qubit_count_matches_hamiltonian` | ansatz and Hamiltonian act on the same number of qubits | exact |
+| `mapped_qubit_count_matches_configuration` | mapped count equals `2 * n_spatial - 2` when reduced | exact |
+| `optimizer_converged` | SciPy reports success | exact |
+| `optimizer_reduced_energy` | final energy is not above the HF energy by more than the target | `1e-6` Ha |
+| `variational_principle` | signed electronic gap is at least `-variational_tolerance` | `1e-8` Ha |
+| `energy_accuracy_target_met` | absolute VQE-vs-exact total error | `1e-6` Ha |
+| `hf_matches_pyscf_rhf` | ansatz HF electronic energy vs PySCF RHF electronic energy | `1e-6` Ha |
+| `exact_matches_pyscf_fci` | exact qubit total vs PySCF FCI total | `1e-6` Ha |
+| `parity_reduction_matches_full_jw` | parity exact electronic vs full-JW electronic | `1e-6` Ha, or `null` for a JW run |
+
+If the independent PySCF FCI calculation is unavailable, the two checks that
+depend on it are set to `False`; the run cannot claim full validation. If the
+full-JW cross-check fails to run during a parity experiment, the corresponding
+check is `False`. The result also records a warning explaining the missing
+reference.
+
+The variational-principle check allows a small negative gap because exact
+statevector arithmetic can undershoot the diagonalized eigenvalue by a few
+times \(10^{-15}\) Ha. The tolerance `1e-8` is far below any physically
+meaningful energy difference and far above floating-point noise.
+
+## 8. Error definitions
+
+The reported error fields are:
+
+\[
+\Delta_{\mathrm{VQE}}
+= \left| E_{\mathrm{VQE,total}} - E_{\mathrm{exact,total}} \right|,
+\]
+
+\[
+g_{\mathrm{var}}
+= E_{\mathrm{VQE,electronic}} - E_{\mathrm{exact,electronic}}.
+\]
+
+The first is the headline absolute error. The second is the signed
+variational gap; a positive value is expected for an approximate trial state,
+and a tiny negative value is numerical noise.
+
+Reference cross-check errors use absolute differences:
+
+- `absolute_exact_vs_pyscf_fci_total`,
+- `absolute_hf_vs_pyscf_rhf_electronic`,
+- `absolute_parity_vs_full_jw_electronic`.
+
+All of these are in Hartree.
+
