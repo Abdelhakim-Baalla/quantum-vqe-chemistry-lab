@@ -99,3 +99,60 @@ The experiment always checks the qubit count against the configuration and
 checks the reduced result against a full Jordan–Wigner diagonalization when
 parity mapping is used.
 
+## 3. UCCSD ansatz
+
+The ansatz is unitary coupled-cluster singles and doubles (UCCSD) with a
+Hartree–Fock reference:
+
+\[
+|\psi(\boldsymbol\theta)\rangle
+= e^{T(\boldsymbol\theta) - T^\dagger(\boldsymbol\theta)}
+|\mathrm{HF}\rangle,
+\qquad
+T = T_1 + T_2.
+\]
+
+`T₁` contains single excitations and `T₂` double excitations. The circuit is
+built with Qiskit Nature's `UCCSD` using one repetition, the parity mapper and
+a `HartreeFock` initial state. For this problem it has **three parameters**
+(two singles and one double).
+
+Brillouin's theorem makes the singles stationary at the RHF reference, so the
+double excitation carries the correlation energy. In the measured run the two
+single-excitation angles remain near zero and the double-excitation angle
+converges to approximately \(-0.11177\) rad. For two electrons in two spatial
+orbitals, this UCCSD form can represent the exact singlet ground state; the
+numerical result confirms this to floating-point precision.
+
+The all-zero angle vector prepares the Hartree–Fock state exactly. That state
+is used both as the default starting point and as the baseline for the
+"optimizer reduced the energy" check. A seeded random start is available for
+experiments, but it is not used for the official result.
+
+## 4. Cost function and simulator
+
+VQE minimizes the electronic expectation value
+
+\[
+E(\boldsymbol\theta)
+= \langle \psi(\boldsymbol\theta) |
+\hat H_{\mathrm{elec}} |
+\psi(\boldsymbol\theta) \rangle .
+\]
+
+The expectation value is evaluated with Qiskit's `StatevectorEstimator`. This
+is an **exact statevector simulator**:
+
+- no shot sampling,
+- no noise model,
+- no hardware,
+- no gate or readout error.
+
+The cost function therefore returns the mathematically exact expectation
+value for the current parameters, up to floating-point round-off. Nuclear
+repulsion is added after optimization.
+
+The simulator is deliberately classical and small. A two-qubit Hamiltonian can
+be diagonalized instantly on a laptop; the value of this project is the
+end-to-end, auditable workflow and its validation, not computational speed.
+
