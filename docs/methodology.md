@@ -284,3 +284,40 @@ Reference cross-check errors use absolute differences:
 
 All of these are in Hartree.
 
+## 9. Reproducibility
+
+The official run uses the Hartree–Fock initial point, the exact simulator and a
+fixed configuration, so it is deterministic apart from last-bit
+floating-point variation across BLAS/LAPACK builds. The JSON result records:
+
+- the resolved configuration, including the optimizer tolerance,
+- the full Pauli Hamiltonian,
+- the ansatz and parameter names,
+- every cost-function evaluation and final parameters,
+- all energies, errors, checks and tolerances,
+- phase timings,
+- Python and package versions,
+- warnings and artifact paths.
+
+Random initial points use NumPy's `default_rng(seed)` and are reproducible for
+a fixed seed. No network access, credentials or quantum hardware are used.
+
+## 10. Limitations
+
+- **Minimal basis.** STO-3G is a qualitative minimal basis, not a predictive
+  model of H₂. The result validates the algorithm, not the chemistry.
+- **Exact simulator.** There is no shot noise, gate error, decoherence or
+  readout error. Hardware behavior is out of scope.
+- **Small problem.** Two qubits after reduction (four without) is classically
+  trivial. No scaling or quantum advantage is demonstrated.
+- **Local optimization.** SciPy optimizers are local; convergence to the
+  ground state is not guaranteed for larger or more rugged problems.
+- **Fixed ansatz.** UCCSD with one repetition is chemically motivated but not
+  universal. ADAPT-VQE and hardware-efficient ansätze are not implemented.
+- **Ground state only.** Excited states, finite-temperature properties and
+  molecular dynamics are not covered.
+- **Single molecule.** Only H₂ is implemented as a first-class experiment.
+  Larger molecules, frozen cores and active spaces are future work.
+- **Classical references are easy here.** Exact diagonalization of a 4×4
+  matrix is not a computational challenge; the references are present to make
+  the validation independent and explicit.
