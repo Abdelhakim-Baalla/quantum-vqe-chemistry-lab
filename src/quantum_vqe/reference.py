@@ -124,3 +124,17 @@ def compute_pyscf_fci(config: ExperimentConfig) -> FCIReference:
         )
 
 
+def full_jordan_wigner_reference(
+    fermionic_hamiltonian: FermionicOp,
+) -> ExactDiagonalization:
+    """Diagonalize the same fermionic Hamiltonian with Jordan-Wigner mapping.
+
+    When the experiment uses parity mapping plus two-qubit tapering, this
+    provides an independent check that the reduction preserved the ground-state
+    energy (within the chosen symmetry sector).
+    """
+    try:
+        jw_hamiltonian = JordanWignerMapper().map(fermionic_hamiltonian)
+        return exact_ground_state(jw_hamiltonian)
+    except Exception as exc:  # pragma: no cover - Qiskit mapper guard
+        raise ReferenceError(f"Jordan-Wigner cross-check failed: {exc}") from exc
