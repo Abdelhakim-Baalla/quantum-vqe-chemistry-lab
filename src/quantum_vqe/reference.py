@@ -27,3 +27,33 @@ class ReferenceError(RuntimeError):
     """Raised when an independent reference cannot be computed."""
 
 
+@dataclass
+class FCIReference:
+    """PySCF RHF + FCI reference, including electronic and total energies."""
+
+    available: bool
+    total_energy: float | None = None
+    electronic_energy: float | None = None
+    nuclear_repulsion_energy: float | None = None
+    rhf_total_energy: float | None = None
+    rhf_electronic_energy: float | None = None
+    converged: bool | None = None
+    method: str = "PySCF RHF + FCI"
+    error: str | None = None
+    wall_time_s: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "available": self.available,
+            "total_energy": self.total_energy,
+            "electronic_energy": self.electronic_energy,
+            "nuclear_repulsion_energy": self.nuclear_repulsion_energy,
+            "rhf_total_energy": self.rhf_total_energy,
+            "rhf_electronic_energy": self.rhf_electronic_energy,
+            "converged": self.converged,
+            "method": self.method,
+            "error": self.error,
+            "wall_time_s": self.wall_time_s,
+        }
+
+
