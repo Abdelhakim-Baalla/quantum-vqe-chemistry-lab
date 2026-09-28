@@ -19,3 +19,24 @@ import numpy as np
 SCHEMA_VERSION = "1.0"
 
 
+def _json_safe(value: Any) -> Any:
+    """Recursively convert NumPy values and reject non-finite floats."""
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, np.floating):
+        value = float(value)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError("result contains a non-finite float; JSON output would be invalid")
+        return value
+    if isinstance(value, Path):
+        return str(value)
+    return value
+
+
