@@ -59,3 +59,9 @@ def test_result_to_json_is_valid_json() -> None:
     assert json.loads(text)["experiment"] == "unit_test"
 
 
+def test_result_rejects_non_finite_float() -> None:
+    result = make_result(energies_hartree={"vqe_total": float("nan")})
+    with pytest.raises(ValueError, match="non-finite"):
+        result.to_json()
+
+
