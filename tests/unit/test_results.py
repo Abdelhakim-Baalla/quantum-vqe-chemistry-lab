@@ -65,3 +65,8 @@ def test_result_rejects_non_finite_float() -> None:
         result.to_json()
 
 
+def test_result_rejects_invalid_status() -> None:
+    with pytest.raises(ValueError, match="status"):
+        make_result(status="maybe")
+
+
