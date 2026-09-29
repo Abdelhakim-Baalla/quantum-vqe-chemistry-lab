@@ -53,3 +53,9 @@ def test_result_schema_and_roundtrip(tmp_path: Path) -> None:
     assert loaded.to_dict() == result.to_dict()
 
 
+def test_result_to_json_is_valid_json() -> None:
+    text = make_result().to_json()
+    assert text.endswith("\n")
+    assert json.loads(text)["experiment"] == "unit_test"
+
+
