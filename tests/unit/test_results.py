@@ -70,3 +70,12 @@ def test_result_rejects_invalid_status() -> None:
         make_result(status="maybe")
 
 
+def test_result_load_rejects_wrong_schema(tmp_path: Path) -> None:
+    path = tmp_path / "bad.json"
+    payload = make_result().to_dict()
+    payload["schema_version"] = "999"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="schema"):
+        ExperimentResult.load(path)
+
+
