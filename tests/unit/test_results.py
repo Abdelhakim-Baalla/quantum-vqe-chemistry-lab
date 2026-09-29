@@ -38,3 +38,18 @@ def make_result(**overrides: Any) -> ExperimentResult:
     return ExperimentResult(**payload)
 
 
+def test_result_schema_and_roundtrip(tmp_path: Path) -> None:
+    result = make_result()
+    path = tmp_path / "nested" / "result.json"
+    saved = result.save(path)
+    assert saved == path
+    assert path.exists()
+
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    assert raw["schema_version"] == SCHEMA_VERSION
+    assert raw["checks"]["not_applicable"] is None
+
+    loaded = ExperimentResult.load(path)
+    assert loaded.to_dict() == result.to_dict()
+
+
