@@ -79,3 +79,12 @@ def test_result_load_rejects_wrong_schema(tmp_path: Path) -> None:
         ExperimentResult.load(path)
 
 
+def test_result_load_rejects_missing_field(tmp_path: Path) -> None:
+    path = tmp_path / "missing.json"
+    payload = make_result().to_dict()
+    del payload["molecule"]
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="missing"):
+        ExperimentResult.load(path)
+
+
