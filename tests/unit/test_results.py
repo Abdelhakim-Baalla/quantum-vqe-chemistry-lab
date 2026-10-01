@@ -104,3 +104,7 @@ def test_result_load_rejects_invalid_json(tmp_path: Path) -> None:
         ExperimentResult.load(path)
 
 
+def test_status_requires_no_failed_check() -> None:
+    assert determine_status({"a": True, "b": None}) == "success"
+    assert determine_status({"a": True, "b": False}) == "failed"
+    assert determine_status({}) == "success"
