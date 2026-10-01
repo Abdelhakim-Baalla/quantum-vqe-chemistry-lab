@@ -97,3 +97,10 @@ def test_result_load_rejects_unknown_field(tmp_path: Path) -> None:
         ExperimentResult.load(path)
 
 
+def test_result_load_rejects_invalid_json(tmp_path: Path) -> None:
+    path = tmp_path / "invalid.json"
+    path.write_text("{not json", encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid JSON"):
+        ExperimentResult.load(path)
+
+
