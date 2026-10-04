@@ -67,3 +67,10 @@ def test_h2_energy_matches_independent_references(h2_result: ExperimentResult) -
     assert h2_result.checks["variational_principle"] is True
 
 
+def test_h2_result_roundtrip(h2_result: ExperimentResult, tmp_path: Path) -> None:
+    path = tmp_path / "h2.json"
+    h2_result.save(path)
+    loaded = ExperimentResult.load(path)
+    assert loaded.to_dict() == h2_result.to_dict()
+
+
