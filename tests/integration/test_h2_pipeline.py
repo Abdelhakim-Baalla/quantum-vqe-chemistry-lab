@@ -23,3 +23,13 @@ def h2_result() -> ExperimentResult:
     return run_h2_experiment(ExperimentConfig())
 
 
+def test_default_h2_run_is_successful(h2_result: ExperimentResult) -> None:
+    assert h2_result.status == "success"
+    assert all(value is not False for value in h2_result.checks.values())
+    assert h2_result.checks["optimizer_converged"] is True
+    assert h2_result.checks["parity_reduction_matches_full_jw"] is True
+    assert h2_result.optimization["converged"] is True
+    assert h2_result.optimization["nfev"] >= 1
+    assert h2_result.optimization["energy_evaluations"] == len(h2_result.optimization["history"])
+
+
