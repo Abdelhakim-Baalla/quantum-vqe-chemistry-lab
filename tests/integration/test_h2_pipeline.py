@@ -85,3 +85,11 @@ def test_h2_convergence_plot(h2_result: ExperimentResult, tmp_path: Path) -> Non
     assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
 
 
+@pytest.mark.parametrize("optimizer", ["BFGS", "L-BFGS-B", "SLSQP", "COBYLA", "Nelder-Mead"])
+def test_supported_optimizers_converge(optimizer: str) -> None:
+    result = run_h2_experiment(ExperimentConfig(optimizer=optimizer, max_iterations=600))
+    assert result.status == "success"
+    assert result.optimization["converged"] is True
+    assert result.errors_hartree["absolute_vqe_vs_exact_total"] <= 1e-6
+
+
