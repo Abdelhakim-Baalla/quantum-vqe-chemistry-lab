@@ -93,3 +93,11 @@ def test_supported_optimizers_converge(optimizer: str) -> None:
     assert result.errors_hartree["absolute_vqe_vs_exact_total"] <= 1e-6
 
 
+def test_parity_without_reduction_uses_four_qubits() -> None:
+    result = run_h2_experiment(ExperimentConfig(mapping="parity", two_qubit_reduction=False))
+    assert result.status == "success"
+    assert result.molecule["num_qubits"] == 4
+    assert result.ansatz["num_qubits"] == 4
+    assert result.checks["parity_reduction_matches_full_jw"] is True
+
+
