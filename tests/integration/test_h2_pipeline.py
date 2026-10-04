@@ -33,3 +33,17 @@ def test_default_h2_run_is_successful(h2_result: ExperimentResult) -> None:
     assert h2_result.optimization["energy_evaluations"] == len(h2_result.optimization["history"])
 
 
+def test_h2_problem_dimensions(h2_result: ExperimentResult) -> None:
+    assert h2_result.molecule["num_electrons"] == 2
+    assert h2_result.molecule["num_spatial_orbitals"] == 2
+    assert h2_result.molecule["num_spin_orbitals"] == 4
+    assert h2_result.molecule["num_qubits"] == 2
+    assert h2_result.hamiltonian["num_qubits"] == 2
+    assert h2_result.ansatz["num_qubits"] == 2
+    assert h2_result.ansatz["num_parameters"] == 3
+    assert h2_result.hamiltonian["hermiticity"]["hermitian"] is True
+    assert h2_result.molecule["nuclear_repulsion_energy_hartree"] == pytest.approx(
+        0.7199689944489797, abs=1e-12
+    )
+
+
