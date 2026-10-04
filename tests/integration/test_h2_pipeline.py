@@ -47,3 +47,23 @@ def test_h2_problem_dimensions(h2_result: ExperimentResult) -> None:
     )
 
 
+def test_h2_energy_matches_independent_references(h2_result: ExperimentResult) -> None:
+    energies = h2_result.energies_hartree
+    errors = h2_result.errors_hartree
+
+    # FCI benchmark for H2/STO-3G at 0.735 Angstrom (total, including nuclear repulsion).
+    assert energies["vqe_total"] == pytest.approx(-1.1373060357534, abs=1e-6)
+    assert energies["exact_qubit_total"] == pytest.approx(-1.1373060357534, abs=1e-6)
+    assert energies["pyscf_fci_total"] == pytest.approx(-1.1373060357534, abs=1e-6)
+
+    assert errors["absolute_vqe_vs_exact_total"] <= 1e-6
+    assert errors["absolute_exact_vs_pyscf_fci_total"] <= 1e-6
+    assert errors["absolute_hf_vs_pyscf_rhf_electronic"] <= 1e-6
+    assert errors["absolute_parity_vs_full_jw_electronic"] <= 1e-6
+
+    # Variational principle, allowing only floating-point noise.
+    assert errors["signed_variational_gap_electronic"] >= -1e-8
+    assert h2_result.checks["energy_accuracy_target_met"] is True
+    assert h2_result.checks["variational_principle"] is True
+
+
