@@ -74,3 +74,14 @@ def test_h2_result_roundtrip(h2_result: ExperimentResult, tmp_path: Path) -> Non
     assert loaded.to_dict() == h2_result.to_dict()
 
 
+def test_h2_convergence_plot(h2_result: ExperimentResult, tmp_path: Path) -> None:
+    path = plot_convergence(
+        h2_result.optimization["history"],
+        tmp_path / "h2.png",
+        exact_energy=h2_result.energies_hartree["exact_qubit_electronic"],
+        hf_energy=h2_result.energies_hartree["hf_electronic"],
+    )
+    assert path.exists()
+    assert path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+
