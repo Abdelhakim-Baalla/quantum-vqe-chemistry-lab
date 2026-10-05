@@ -109,3 +109,17 @@ def test_jordan_wigner_uses_four_qubits() -> None:
     assert result.errors_hartree["absolute_vqe_vs_exact_total"] <= 1e-6
 
 
+def _run_cli(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    env["MPLBACKEND"] = "Agg"
+    return subprocess.run(
+        [sys.executable, "-m", "quantum_vqe", *args],
+        cwd=cwd,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=180,
+        check=False,
+    )
+
+
