@@ -153,3 +153,22 @@ def test_cli_writes_json_and_plot(tmp_path: Path) -> None:
     assert plot_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
 
 
+def test_cli_jordan_wigner(tmp_path: Path) -> None:
+    json_path = tmp_path / "cli_jw.json"
+    completed = _run_cli(
+        [
+            "run-h2",
+            "--mapping",
+            "jordan-wigner",
+            "--json",
+            str(json_path),
+        ],
+        tmp_path,
+    )
+    assert completed.returncode == 0, completed.stderr
+    result = ExperimentResult.load(json_path)
+    assert result.status == "success"
+    assert result.molecule["num_qubits"] == 4
+    assert result.checks["parity_reduction_matches_full_jw"] is None
+
+
