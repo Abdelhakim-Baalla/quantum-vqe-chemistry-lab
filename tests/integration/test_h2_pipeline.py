@@ -123,3 +123,33 @@ def _run_cli(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+def test_cli_writes_json_and_plot(tmp_path: Path) -> None:
+    json_path = tmp_path / "cli_result.json"
+    completed = _run_cli(
+        [
+            "run-h2",
+            "--distance",
+            "0.735",
+            "--basis",
+            "sto3g",
+            "--json",
+            str(json_path),
+            "--plot",
+        ],
+        tmp_path,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "Status:              SUCCESS" in completed.stdout
+    assert "VQE total" in completed.stdout
+    assert "Exact qubit total" in completed.stdout
+    assert "converged: yes" in completed.stdout
+    assert json_path.exists()
+
+    result = ExperimentResult.load(json_path)
+    assert result.status == "success"
+    assert result.artifacts["json"] == str(json_path)
+    plot_path = Path(result.artifacts["plot"])
+    assert plot_path.exists()
+    assert plot_path.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+
+
