@@ -172,3 +172,12 @@ def test_cli_jordan_wigner(tmp_path: Path) -> None:
     assert result.checks["parity_reduction_matches_full_jw"] is None
 
 
+def test_cli_rejects_reduction_with_jordan_wigner(tmp_path: Path) -> None:
+    completed = _run_cli(
+        ["run-h2", "--mapping", "jordan-wigner", "--reduce"],
+        tmp_path,
+    )
+    assert completed.returncode == 2
+    assert "--reduce" in completed.stderr
+
+
