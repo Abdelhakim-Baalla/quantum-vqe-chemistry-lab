@@ -181,3 +181,7 @@ def test_cli_rejects_reduction_with_jordan_wigner(tmp_path: Path) -> None:
     assert "--reduce" in completed.stderr
 
 
+def test_cli_rejects_invalid_distance(tmp_path: Path) -> None:
+    completed = _run_cli(["run-h2", "--distance", "-0.5"], tmp_path)
+    assert completed.returncode == 2
+    assert "invalid configuration" in completed.stderr
