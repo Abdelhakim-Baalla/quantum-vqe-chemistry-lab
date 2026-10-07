@@ -127,3 +127,13 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _default_json_path(config: ExperimentConfig, output_dir: Path) -> Path:
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S_%fZ")
+    reduction = "_2q" if config.two_qubit_reduction else ""
+    filename = (
+        f"h2_d{config.distance_angstrom:.3f}A_{config.basis}_"
+        f"{config.mapping}{reduction}_{stamp}.json"
+    )
+    return output_dir / filename
+
+
