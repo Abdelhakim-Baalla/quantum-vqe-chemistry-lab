@@ -143,3 +143,9 @@ def _format_energy(value: float | None, digits: int = 9) -> str:
     return f"{float(value):.{digits}f}"
 
 
+def _format_error(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"{float(value):.3e}"
+
+
