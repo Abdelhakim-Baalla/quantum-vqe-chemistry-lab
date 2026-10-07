@@ -137,3 +137,9 @@ def _default_json_path(config: ExperimentConfig, output_dir: Path) -> Path:
     return output_dir / filename
 
 
+def _format_energy(value: float | None, digits: int = 9) -> str:
+    if value is None:
+        return "n/a"
+    return f"{float(value):.{digits}f}"
+
+
