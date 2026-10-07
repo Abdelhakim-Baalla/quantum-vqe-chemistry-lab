@@ -149,3 +149,19 @@ def _format_error(value: float | None) -> str:
     return f"{float(value):.3e}"
 
 
+def _print_header(config: ExperimentConfig, json_path: Path) -> None:
+    print("H2 VQE chemistry experiment")
+    print("  molecule:       H2")
+    print(f"  bond length:    {config.distance_angstrom:.6f} Angstrom")
+    print(f"  basis:          {config.basis}")
+    print(f"  mapping:        {config.mapping}")
+    print(f"  2-qubit reduce: {'yes' if config.two_qubit_reduction else 'no'}")
+    print(
+        f"  optimizer:      {config.optimizer} "
+        f"(max {config.max_iterations} iterations, tolerance {config.tolerance:.3g})"
+    )
+    print(f"  initial point:  {config.initial_point} (seed {config.seed})")
+    print(f"  JSON output:    {json_path}")
+    print()
+
+
