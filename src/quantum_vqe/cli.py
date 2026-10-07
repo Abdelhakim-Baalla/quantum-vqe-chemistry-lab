@@ -165,3 +165,103 @@ def _print_header(config: ExperimentConfig, json_path: Path) -> None:
     print()
 
 
+def _print_result(result: ExperimentResult, plot_path: Path | None) -> None:
+    energies = result.energies_hartree
+    errors = result.errors_hartree
+    optimization = result.optimization
+    molecule = result.molecule
+    hamiltonian = result.hamiltonian
+    ansatz = result.ansatz
+
+    print("=" * 78)
+    print(" H2 VQE RESULT")
+    print("=" * 78)
+    print(f"Status:              {result.status.upper()}")
+    print(f"Created (UTC):       {result.created_utc}")
+    print(
+        f"Molecule:            {molecule['name']} at "
+        f"{molecule['bond_length_angstrom']:.6f} Angstrom, basis {molecule['basis']}"
+    )
+    print(
+        f"Hamiltonian:         {hamiltonian['mapping']} mapping, "
+        f"{hamiltonian['num_qubits']} qubits, {hamiltonian['num_terms']} Pauli terms"
+    )
+    print(
+        f"Ansatz:              {ansatz['name']}, {ansatz['num_parameters']} parameters, "
+        f"{ansatz['initial_state']} reference"
+    )
+    print(f"Simulator:           {result.simulator['name']} ({result.simulator['type']}, no shots)")
+    print(
+        f"Optimizer:           {optimization['optimizer']} "
+        f"(converged: {'yes' if optimization['converged'] else 'no'}, "
+        f"nfev: {optimization['nfev']}, nit: {optimization['nit']})"
+    )
+    if not optimization["converged"]:
+        print(f"Optimizer message:   {optimization['message']}")
+
+    print("-" * 78)
+    print("Energies (Hartree)")
+    print(f"  Nuclear repulsion:                 {_format_energy(energies['nuclear_repulsion'])}")
+    print(f"  Hartree-Fock electronic:           {_format_energy(energies['hf_electronic'])}")
+    print(
+        "  Initial VQE electronic:            "
+        f"{_format_energy(optimization['initial_energy_hartree'])}"
+    )
+    print(f"  VQE electronic:                    {_format_energy(energies['vqe_electronic'])}")
+    print(f"  VQE total (electronic + nuclear):  {_format_energy(energies['vqe_total'])}")
+    print(
+        f"  Exact qubit electronic:            {_format_energy(energies['exact_qubit_electronic'])}"
+    )
+    print(f"  Exact qubit total:                 {_format_energy(energies['exact_qubit_total'])}")
+    print(f"  PySCF FCI total (independent):     {_format_energy(energies['pyscf_fci_total'])}")
+    if energies.get("full_jordan_wigner_electronic") is not None:
+        print(
+            "  Full JW electronic (cross-check):  "
+            f"{_format_energy(energies['full_jordan_wigner_electronic'])}"
+        )
+
+    print("-" * 78)
+    print("Errors (Hartree)")
+    print(
+        "  |VQE - exact| total:               "
+        f"{_format_error(errors['absolute_vqe_vs_exact_total'])}"
+    )
+    print(
+        "  Signed variational gap (VQE-exact):"
+        f" {_format_error(errors['signed_variational_gap_electronic'])}"
+    )
+    print(
+        "  |exact - PySCF FCI|:               "
+        f"{_format_error(errors['absolute_exact_vs_pyscf_fci_total'])}"
+    )
+    print(
+        "  |Hartree-Fock - PySCF RHF|:        "
+        f"{_format_error(errors['absolute_hf_vs_pyscf_rhf_electronic'])}"
+    )
+    print(
+        "  |parity - full JW|:                "
+        f"{_format_error(errors['absolute_parity_vs_full_jw_electronic'])}"
+    )
+    print(
+        "  Final UCCSD parameters:            "
+        f"{[round(value, 10) for value in optimization['final_parameters']]}"
+    )
+
+    print("-" * 78)
+    print("Checks")
+    for name, value in result.checks.items():
+        label = "PASS" if value is True else ("FAIL" if value is False else "N/A ")
+        print(f"  [{label}] {name}")
+    if result.warnings:
+        print("-" * 78)
+        print("Warnings")
+        for warning in result.warnings:
+            print(f"  - {warning}")
+
+    print("-" * 78)
+    print(f"JSON result:         {result.artifacts.get('json', 'n/a')}")
+    print(f"Convergence plot:    {plot_path if plot_path is not None else 'not requested'}")
+    print(f"Wall clock:          {result.timing_seconds['total']:.3f} s")
+    print("=" * 78)
+
+
