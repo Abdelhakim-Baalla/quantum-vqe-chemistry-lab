@@ -265,3 +265,85 @@ def _print_result(result: ExperimentResult, plot_path: Path | None) -> None:
     print("=" * 78)
 
 
+def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entry point.  Returns a process exit code (0 success, 1 failed checks, 2 error)."""
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    if args.command != "run-h2":
+        parser.print_help()
+        return 2
+
+    reduction = args.two_qubit_reduction
+    if args.mapping == "jordan-wigner":
+        if reduction is True:
+            parser.error("--reduce is only available with --mapping parity")
+        reduction = False
+    elif reduction is None:
+        reduction = True
+
+    try:
+        config = ExperimentConfig(
+            distance_angstrom=args.distance,
+            basis=args.basis,
+            mapping=args.mapping,
+            two_qubit_reduction=reduction,
+            optimizer=args.optimizer,
+            max_iterations=args.max_iterations,
+            tolerance=args.tolerance,
+            initial_point=args.initial_point,
+            seed=args.seed,
+        )
+    except ValueError as exc:
+        print(f"error: invalid configuration: {exc}", file=sys.stderr)
+        return 2
+
+    json_path = (
+        args.json_path
+        if args.json_path is not None
+        else _default_json_path(config, args.output_dir)
+    )
+    plot_path = json_path.with_suffix(".png") if args.plot else None
+
+    _print_header(config, json_path)
+
+    try:
+        result = run_h2_experiment(config)
+    except (ChemistryError, ExperimentError, VQEError, ValueError, ImportError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    except Exception as exc:  # pragma: no cover - last-resort CLI boundary
+        print(f"error: unexpected failure: {exc}", file=sys.stderr)
+        return 2
+
+    result.artifacts["json"] = str(json_path)
+    plot_failed = False
+    if plot_path is not None:
+        plot_started = time.perf_counter()
+        try:
+            plot_convergence(
+                result.optimization["history"],
+                plot_path,
+                exact_energy=result.energies_hartree["exact_qubit_electronic"],
+                hf_energy=result.energies_hartree["hf_electronic"],
+                title=(
+                    f"H2 VQE convergence ({config.basis}, r = {config.distance_angstrom:.3f} A)"
+                ),
+            )
+            result.artifacts["plot"] = str(plot_path)
+            result.timing_seconds["plot"] = time.perf_counter() - plot_started
+        except Exception as exc:
+            plot_failed = True
+            message = f"Convergence plot could not be written: {exc}"
+            result.warnings.append(message)
+            print(f"warning: {message}", file=sys.stderr)
+
+    try:
+        result.save(json_path)
+    except OSError as exc:
+        print(f"error: could not write JSON result to {json_path}: {exc}", file=sys.stderr)
+        return 2
+
+    _print_result(result, plot_path if not plot_failed else None)
+    if plot_failed:
+        return 2
+    return 0 if result.status == "success" else 1
