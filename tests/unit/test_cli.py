@@ -53,3 +53,23 @@ def test_cli_renders_official_result(
     assert saved.artifacts["json"] == str(output)
 
 
+def test_cli_returns_1_for_failed_checks(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    official_result: ExperimentResult,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    official_result.status = "failed"
+    official_result.checks["energy_accuracy_target_met"] = False
+    monkeypatch.setattr(cli, "run_h2_experiment", lambda config: official_result)
+    output = tmp_path / "failed.json"
+
+    code = cli.main(["run-h2", "--json", str(output)])
+    captured = capsys.readouterr()
+
+    assert code == 1
+    assert "Status:              FAILED" in captured.out
+    assert "[FAIL] energy_accuracy_target_met" in captured.out
+    assert ExperimentResult.load(output).status == "failed"
+
+
