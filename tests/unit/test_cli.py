@@ -73,3 +73,11 @@ def test_cli_returns_1_for_failed_checks(
     assert ExperimentResult.load(output).status == "failed"
 
 
+def test_cli_rejects_invalid_distance(capsys: pytest.CaptureFixture[str]) -> None:
+    code = cli.main(["run-h2", "--distance", "-0.5"])
+    captured = capsys.readouterr()
+    assert code == 2
+    assert "invalid configuration" in captured.err
+    assert "distance_angstrom" in captured.err
+
+
