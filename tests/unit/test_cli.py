@@ -19,3 +19,15 @@ def official_result() -> ExperimentResult:
     return ExperimentResult.load(OFFICIAL_RESULT)
 
 
+def test_parser_defaults() -> None:
+    parser = cli._build_parser()
+    args = parser.parse_args(["run-h2"])
+    assert args.distance == pytest.approx(0.735)
+    assert args.basis == "sto3g"
+    assert args.mapping == "parity"
+    assert args.two_qubit_reduction is None
+    assert args.optimizer == "L-BFGS-B"
+    assert args.json_path is None
+    assert args.plot is False
+
+
