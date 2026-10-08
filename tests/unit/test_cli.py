@@ -81,3 +81,10 @@ def test_cli_rejects_invalid_distance(capsys: pytest.CaptureFixture[str]) -> Non
     assert "distance_angstrom" in captured.err
 
 
+def test_cli_rejects_reduce_with_jordan_wigner(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as excinfo:
+        cli.main(["run-h2", "--mapping", "jordan-wigner", "--reduce"])
+    assert excinfo.value.code == 2
+    assert "--reduce" in capsys.readouterr().err
+
+
