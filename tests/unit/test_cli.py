@@ -88,3 +88,22 @@ def test_cli_rejects_reduce_with_jordan_wigner(capsys: pytest.CaptureFixture[str
     assert "--reduce" in capsys.readouterr().err
 
 
+def test_cli_reports_chemistry_error(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def fail(config):  # noqa: ANN001
+        raise ChemistryError("integrals unavailable")
+
+    monkeypatch.setattr(cli, "run_h2_experiment", fail)
+    output = tmp_path / "never.json"
+
+    code = cli.main(["run-h2", "--json", str(output)])
+    captured = capsys.readouterr()
+
+    assert code == 2
+    assert "integrals unavailable" in captured.err
+    assert not output.exists()
+
+
