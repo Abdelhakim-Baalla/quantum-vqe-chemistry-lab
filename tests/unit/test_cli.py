@@ -31,3 +31,25 @@ def test_parser_defaults() -> None:
     assert args.plot is False
 
 
+def test_cli_renders_official_result(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    official_result: ExperimentResult,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(cli, "run_h2_experiment", lambda config: official_result)
+    output = tmp_path / "result.json"
+
+    code = cli.main(["run-h2", "--json", str(output)])
+    captured = capsys.readouterr()
+
+    assert code == 0
+    assert "Status:              SUCCESS" in captured.out
+    assert "VQE total (electronic + nuclear)" in captured.out
+    assert "Exact qubit total" in captured.out
+    assert "converged: yes" in captured.out
+    saved = ExperimentResult.load(output)
+    assert saved.status == "success"
+    assert saved.artifacts["json"] == str(output)
+
+
