@@ -124,3 +124,24 @@ def test_cli_writes_plot(
     assert ExperimentResult.load(output).artifacts["plot"] == str(plot)
 
 
+def test_cli_plot_failure_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    official_result: ExperimentResult,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr(cli, "run_h2_experiment", lambda config: official_result)
+    monkeypatch.setattr(
+        cli,
+        "plot_convergence",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("no plot backend")),
+    )
+    output = tmp_path / "result.json"
+
+    code = cli.main(["run-h2", "--json", str(output), "--plot"])
+    captured = capsys.readouterr()
+
+    assert code == 2
+    assert output.exists()
+    assert "no plot backend" in captured.err
+    assert "could not be written" in captured.err
