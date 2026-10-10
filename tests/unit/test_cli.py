@@ -107,3 +107,20 @@ def test_cli_reports_chemistry_error(
     assert not output.exists()
 
 
+def test_cli_writes_plot(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    official_result: ExperimentResult,
+) -> None:
+    monkeypatch.setattr(cli, "run_h2_experiment", lambda config: official_result)
+    output = tmp_path / "result.json"
+
+    code = cli.main(["run-h2", "--json", str(output), "--plot"])
+    plot = output.with_suffix(".png")
+
+    assert code == 0
+    assert plot.exists()
+    assert plot.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert ExperimentResult.load(output).artifacts["plot"] == str(plot)
+
+
