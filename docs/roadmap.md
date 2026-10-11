@@ -84,3 +84,36 @@ The experiment should state clearly that small Max-Cut instances are easy
 classically and that QAOA performance at this scale says nothing about quantum
 advantage.
 
+## Medium term
+
+### Hardware execution
+
+- Transpile the UCCSD circuit for a selected backend.
+- Add measurement mitigation and readout calibration.
+- Report shot counts, hardware noise and confidence intervals.
+- Compare hardware, noisy simulation and exact simulation on the same problem.
+- Keep credentials and backend access out of the repository.
+
+### Excited states and properties
+
+- Deflation or subspace methods for excited states.
+- Dipole moments and other observables.
+- Finite-temperature and thermal-state methods.
+- Molecular dynamics or geometry optimization with a quantum energy oracle.
+
+### Error mitigation and resilience
+
+- Zero-noise extrapolation.
+- Probabilistic error cancellation.
+- Symmetry verification.
+- Comparison of raw and mitigated energies against exact references.
+
+## Long term
+
+- Larger active spaces and embedding methods.
+- Relativistic effects.
+- Real-time dynamics.
+- Integration with classical quantum-chemistry workflows.
+- Reproducible benchmark suites across simulators and hardware.
+- Packaging and documentation suitable for community contributions.
+
