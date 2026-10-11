@@ -300,3 +300,30 @@ unavailable. CI installs the full `.[dev,web]` extra, so both core and UI tests
 run there. In the tested environment the suite reports 99 unit and 17
 integration tests (116 total), with 89% statement coverage for `quantum_vqe`.
 
+## 7. Determinism and reproducibility
+
+- The official run starts from all-zero UCCSD angles, which prepares the
+  Hartree–Fock state.
+- The simulator is exact; no random shots are involved.
+- Random initial points use `numpy.random.default_rng(seed)`.
+- The JSON records package versions, platform, timings and the complete
+  optimization history.
+- Output paths are explicit or timestamped; the checked-in official artifact
+  uses a fixed path under `docs/assets/`.
+
+## 8. Extension points
+
+The module boundaries are intended to make the following changes local:
+
+- **New molecule:** generalize `build_chemistry()` and the CLI; the VQE and
+  validation layers are already molecule-agnostic.
+- **New mapping:** add a mapper in `chemistry.py` and a qubit-count rule in
+  `config.py`.
+- **New ansatz:** replace the UCCSD construction; `VQE` only needs a circuit
+  with parameters.
+- **Shot-based or noisy simulation:** inject a different estimator into
+  `run_h2_experiment()`; the result schema already separates simulator
+  assumptions from energies.
+- **New experiment (for example QAOA Max-Cut):** add a sibling orchestration
+  module and result type rather than overloading `run_h2_experiment()`. This is
+  listed as future work in `docs/roadmap.md`.
