@@ -103,3 +103,166 @@ Nature. `vqe.py` receives already-mapped operators and circuits, so it can be
 tested with tiny synthetic Hamiltonians. `reference.py` deliberately bypasses
 Qiskit Nature for the FCI cross-check and uses PySCF directly.
 
+## 3. Module responsibilities
+
+### `config.py`
+
+`ExperimentConfig` is a frozen dataclass. It validates and normalizes:
+
+- bond length, basis, charge and spin,
+- mapping (`parity` or `jordan-wigner`),
+- two-qubit reduction (default on for parity, forbidden for Jordan–Wigner),
+- optimizer name and tolerance (with per-optimizer defaults),
+- iteration cap, initial-point mode and seed,
+- accuracy and reference tolerances.
+
+`geometry_angstrom`, `expected_num_qubits()` and `summary()` derive values from
+the validated configuration. `to_dict()` / `from_dict()` make the
+configuration round-trippable and reject unknown fields.
+
+### `chemistry.py`
+
+`build_chemistry(config)` returns a `ChemistryData` record containing the
+problem, fermionic and qubit Hamiltonians, mapper, Hartree–Fock circuit,
+UCCSD ansatz, nuclear repulsion, particle/orbital counts and timings.
+
+It enforces three invariants before returning:
+
+1. the mapped Hamiltonian has the qubit count expected from the configuration,
+2. the ansatz and Hamiltonian act on the same number of qubits,
+3. the ansatz has at least one variational parameter.
+
+`_extract_electronic_hamiltonian()` isolates the Qiskit Nature 0.8 tuple/dict
+return shape so the rest of the code does not depend on that API detail.
+
+### `hamiltonian.py`
+
+Pure operator and energy helpers:
+
+- `check_hermitian()` builds the dense matrix for up to 12 qubits and compares
+  it with its adjoint; larger operators fall back to checking that Pauli
+  coefficients are real.
+- `exact_ground_state()` uses dense `eigvalsh` up to 1024 dimensions and sparse
+  `eigsh` above that.
+- `expectation_from_statevector()` is a second, independent Qiskit code path
+  used by tests to validate the estimator.
+- `compare_energies()` computes signed gaps and absolute errors.
+- `pauli_term_records()` serializes the Hamiltonian for JSON.
+
+### `vqe.py`
+
+`VQE` owns the cost function and the optimization loop. It validates qubit and
+parameter counts, wraps the estimator call, records every evaluation, and maps
+SciPy's result into `VQEResult`. Optimizer-specific options are set in one
+place, `_scipy_options()`.
+
+The loop is intentionally not hidden behind a solver class. The history is the
+primary evidence for convergence, and it is serialized unchanged.
+
+### `reference.py`
+
+`compute_pyscf_fci()` builds a fresh PySCF molecule and runs RHF + FCI with
+`conv_tol=1e-10` and `max_cycle=200`. Failures are returned as an unavailable
+reference with an error message rather than crashing the experiment; the
+orchestrator then marks the dependent checks as failed.
+
+`full_jordan_wigner_reference()` maps the same fermionic Hamiltonian with
+Jordan–Wigner and diagonalizes it in the full Hilbert space. It is only called
+for parity runs.
+
+### `experiment.py`
+
+`run_h2_experiment()` is the orchestrator. It:
+
+1. builds chemistry,
+2. checks Hermiticity and raises if the Hamiltonian is not Hermitian,
+3. diagonalizes the same qubit Hamiltonian,
+4. computes the independent PySCF FCI reference,
+5. computes the full-JW reference when applicable,
+6. evaluates the Hartree–Fock baseline,
+7. runs VQE,
+8. adds nuclear repulsion and computes errors,
+9. evaluates all scientific checks,
+10. assembles `ExperimentResult` with warnings and timings.
+
+`determine_status()` is deliberately conservative: `success` requires that no
+performed check is `False`. `None` means not applicable. A missing independent
+reference is never silently treated as a pass.
+
+### `results.py`
+
+`ExperimentResult` is the JSON schema. It validates the schema version and the
+status value, converts NumPy scalars, rejects non-finite floats, and writes
+atomically via a temporary file followed by `replace()`. `load()` rejects
+unknown or missing fields so schema drift is visible.
+
+### `plotting.py`
+
+`plot_convergence()` accepts either `EnergyEvaluation` objects or the JSON
+dictionary form. It plots raw cost-function evaluations and a best-so-far step
+curve, plus exact and Hartree–Fock reference lines. Matplotlib is imported
+lazily and forced to the `Agg` backend, so importing the numerical modules does
+not require a display.
+
+### `cli.py`
+
+The CLI is an `argparse` front end:
+
+- `run-h2` is the only experiment,
+- `--json` overrides the timestamped default path,
+- `--plot` writes a PNG next to the JSON,
+- `--mapping jordan-wigner` forces four qubits and rejects `--reduce`,
+- invalid configuration returns exit code 2,
+- failed scientific checks return exit code 1,
+- successful runs return exit code 0.
+
+The console report is generated from the same `ExperimentResult` that is saved,
+so the printed and stored values cannot diverge.
+
+### `webapp/` and `app.py`
+
+The Streamlit interface is deliberately separated from the scientific package:
+
+- `app.py` owns page configuration, CSS, widgets, tabs, error surfaces and
+  downloadable output. It does not contain VQE or chemistry code.
+- `webapp/logic.py` validates form values, constructs the existing
+  `ExperimentConfig`, calls `build_chemistry()` and then
+  `run_h2_experiment(config, chemistry=chemistry)`, and handles history and
+  export. It imports no Streamlit and can be unit-tested directly.
+- `webapp/visuals.py` derives charts, molecule labels, parameter tables and
+  circuit images from real result records. Circuit drawing is performed during
+  the run, not during later renders, because Qiskit circuit decomposition is not
+  safely reusable across Streamlit's script-run threads in this environment.
+  The resulting PNG bytes and dataframes are stored in `CircuitArtifacts`.
+
+The optional `chemistry=` argument keeps one chemistry build and one ansatz
+object in the UI path. The default CLI call still builds chemistry inside
+`run_h2_experiment`, so CLI behavior is unchanged. The circuit shown in the UI
+is therefore the executed ansatz, not a second decorative circuit.
+
+The web extra installs Streamlit, pandas, Altair and `pylatexenc` (needed by
+Qiskit's Matplotlib circuit drawer). The scientific package has no dependency on
+any of them.
+
+## 4. Result schema
+
+The top-level JSON sections are stable and versioned (`schema_version: "1.0"`):
+
+| Section | Contents |
+| --- | --- |
+| `experiment`, `status`, `created_utc` | identity and outcome |
+| `config` | fully resolved run configuration |
+| `molecule` | geometry, basis, particle/orbital/qubit counts, nuclear repulsion |
+| `hamiltonian` | mapping, reduction description, Pauli terms, Hermiticity report |
+| `ansatz` | UCCSD, qubit/parameter counts, parameter names, reference state |
+| `optimizer`, `simulator` | method and simulation assumptions |
+| `energies_hartree` | HF, VQE, exact-qubit, PySCF FCI and full-JW energies |
+| `errors_hartree` | absolute errors and signed variational gap |
+| `checks` | booleans and `null` for not-applicable checks |
+| `check_tolerances_hartree` | every tolerance used by the checks |
+| `references` | exact diagonalization, FCI and full-JW details |
+| `optimization` | full evaluation history, parameters, counts, message |
+| `timing_seconds` | chemistry, diagonalization, FCI, JW, VQE, plot, total |
+| `software` | Python, platform and package versions |
+| `warnings`, `artifacts` | missing-reference notices and output paths |
+
