@@ -266,3 +266,37 @@ The top-level JSON sections are stable and versioned (`schema_version: "1.0"`):
 | `software` | Python, platform and package versions |
 | `warnings`, `artifacts` | missing-reference notices and output paths |
 
+## 5. Error boundaries
+
+| Error | Raised by | CLI behavior |
+| --- | --- | --- |
+| `ValueError` | configuration and input validation | print message, exit 2 |
+| `ChemistryError` | integral generation or mapping failure | print message, exit 2 |
+| `VQEError` | estimator or optimizer failure | print message, exit 2 |
+| `ExperimentError` | non-Hermitian Hamiltonian or orchestration failure | print message, exit 2 |
+| `OSError` | JSON write failure | print message, exit 2 |
+| failed checks | scientific validation | print report, exit 1 |
+
+A failed plot is a warning and returns exit code 2 after the JSON has been
+written, so the numerical result is not lost.
+
+## 6. Testing architecture
+
+The suite is split by the `integration` pytest marker:
+
+- **Unit tests** (`tests/unit/`) use tiny synthetic operators and circuits.
+  They cover configuration validation, Hermiticity, exact diagonalization,
+  energy comparison, estimator/statevector agreement, the VQE loop, JSON
+  round-trips, status logic, plotting, web validation and exports, real-result
+  chart/circuit artifacts, and Streamlit `AppTest` UI wiring. They do not run
+  the PySCF chemistry pipeline.
+- **Integration tests** (`tests/integration/`) run the real H₂ pipeline with
+  PySCF and Qiskit Nature. They check dimensions, energies, references,
+  optimizer variants, parity/JW mappings, JSON round-trip, plotting, CLI
+  subprocess behavior, and a real H₂ run through the Streamlit UI harness.
+
+The integration modules are skipped automatically if PySCF or Streamlit is
+unavailable. CI installs the full `.[dev,web]` extra, so both core and UI tests
+run there. In the tested environment the suite reports 99 unit and 17
+integration tests (116 total), with 89% statement coverage for `quantum_vqe`.
+
