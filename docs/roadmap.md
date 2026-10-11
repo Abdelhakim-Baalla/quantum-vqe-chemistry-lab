@@ -117,3 +117,26 @@ advantage.
 - Reproducible benchmark suites across simulators and hardware.
 - Packaging and documentation suitable for community contributions.
 
+## Non-goals
+
+The project does not aim to:
+
+- claim quantum advantage on classically trivial problems,
+- replace established classical quantum-chemistry codes,
+- provide production-grade hardware access or credential management,
+- hide optimizer or simulator assumptions behind a convenience API,
+- report a successful run when an independent reference is missing or a check
+  fails.
+
+## Contributing priorities
+
+The most useful contributions at this stage are:
+
+1. additional independent references and cross-checks,
+2. tests that would catch energy-bookkeeping or mapping mistakes,
+3. reproducible comparisons rather than new ansatz names without evidence,
+4. documentation of limitations and failure modes,
+5. small, reviewable changes that keep the existing H₂ result reproducible.
+
+See [`docs/methodology.md`](methodology.md) for the current scientific scope and
+[`docs/experiment_report.md`](experiment_report.md) for the measured baseline.
