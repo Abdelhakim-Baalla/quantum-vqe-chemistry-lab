@@ -62,6 +62,56 @@ The installed entry point is equivalent to the module invocation:
 quantum-vqe run-h2 --distance 0.735
 ```
 
+## Quantum Lab web interface
+
+Launch the local dashboard from the repository root:
+
+```bash
+streamlit run app.py
+```
+
+Streamlit prints a local URL, normally <http://localhost:8501>. The server is
+intended for local use; do not expose it publicly without adding authentication
+and transport security. No cloud account, API key or quantum hardware is used.
+
+The dashboard provides:
+
+- **Experiment configuration:** H₂, bond distance, validated basis/ansatz
+  options, parity or Jordan–Wigner mapping, the five supported SciPy
+  optimizers, iteration cap, initial-point mode, seed and an optional output
+  directory.
+- **Real execution:** a prominent **Run VQE Experiment** action calls the
+  existing `quantum_vqe` pipeline. It does not duplicate the algorithm and does
+  not invent energies or convergence data.
+- **Molecular information:** geometry, electrons, orbitals, qubit count,
+  Hamiltonian terms, nuclear repulsion and a clearly labeled illustrative
+  H–H geometry.
+- **Quantum circuit explorer:** diagrams generated from the exact UCCSD ansatz
+  object used by the run, with qubit count, depth, gate counts and the optimized
+  parameters.
+- **Energy results:** electronic and total energies kept separate, absolute
+  error in Hartree and milli-Hartree, initial energy, evaluation count,
+  convergence status and elapsed time.
+- **Interactive convergence:** recorded cost-function evaluations with an exact
+  reference line and a best-so-far trace. The chart and table contain only
+  actual history points.
+- **History and export:** completed session runs can be compared, saved as
+  structured JSON under the selected output directory, or downloaded as JSON or
+  CSV. No database is used.
+- **Learning mode:** short explanations of qubits, molecular Hamiltonians,
+  fermion-to-qubit mappings, parameterized circuits, classical optimization,
+  exact diagonalization and why simulation is not hardware execution.
+
+The interface calls the same `ExperimentConfig`, `build_chemistry` and
+`run_h2_experiment` implementation as the CLI. The scientific package does not
+import Streamlit. The Streamlit-independent UI helpers live in `webapp/`; the
+scientific layer remains in `src/quantum_vqe/`.
+
+Tests for the interface use Streamlit's `AppTest` and are described in
+[`docs/web_interface.md`](docs/web_interface.md). They cover startup, form
+validation, calls into the scientific layer, real-result display, failure
+handling, error arithmetic, JSON export and a real H₂ run through the UI.
+
 ## What VQE does
 
 A quantum chemistry problem can be written as a **Hamiltonian** \(\hat H\):
@@ -361,4 +411,33 @@ The CI workflow in `.github/workflows/ci.yml` installs `.[dev,web]` and runs
 linting, formatting checks, unit tests and the chemistry/UI integration tests
 on Python 3.11 and 3.12. The workflow file is checked in, but a GitHub Actions
 run is not claimed as verified from this local environment.
+
+## Project layout
+
+```text
+quantum-vqe-chemistry-lab/
+├── src/quantum_vqe/
+│   ├── config.py        # validated, serializable experiment configuration
+│   ├── chemistry.py     # PySCF → electronic problem → mapping → UCCSD
+│   ├── hamiltonian.py   # Hermiticity, exact diagonalization, expectation values
+│   ├── vqe.py           # explicit VQE loop and optimizer bookkeeping
+│   ├── reference.py     # PySCF FCI and full-JW independent references
+│   ├── experiment.py    # orchestration, checks and result assembly
+│   ├── results.py       # JSON schema, save/load and validation
+│   ├── plotting.py      # convergence plots
+│   ├── cli.py           # `python -m quantum_vqe run-h2`
+│   └── versions.py      # reproducibility metadata
+├── app.py               # Streamlit entry point (`streamlit run app.py`)
+├── webapp/
+│   ├── logic.py         # validation, run orchestration and exports (no Streamlit)
+│   ├── visuals.py       # actual-result charts, molecule and circuit artifacts
+│   └── __init__.py
+├── .streamlit/
+│   └── config.toml      # dark theme and local privacy setting
+├── tests/unit/          # fast tests, including web logic and AppTest UI wiring
+├── tests/integration/   # real H2/PySCF/CLI and real UI-run tests
+├── examples/            # programmatic examples
+├── docs/                # methodology, architecture, web interface and experiment report
+└── .github/workflows/   # CI
+```
 
