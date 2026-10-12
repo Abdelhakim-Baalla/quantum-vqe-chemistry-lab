@@ -278,3 +278,47 @@ under `results/`, which is ignored by git. The script is intentionally small:
 it calls `run_h2_experiment`, saves the result, and plots the recorded
 optimization history.
 
+## Output fields
+
+A JSON result contains:
+
+- `experiment`, `schema_version`, `status`, `created_utc`
+- `config`: resolved run configuration, including the chosen tolerance
+- `molecule`: geometry, basis, charge, spin, orbital/electron counts, nuclear
+  repulsion, qubit count
+- `hamiltonian`: mapping, reduction description, Pauli terms, Hermiticity check
+- `ansatz`: UCCSD, qubit count, parameter count and names, reference state
+- `optimizer` and `simulator`: method and simulation assumptions
+- `energies_hartree`: HF, VQE, exact-qubit and PySCF FCI energies, both
+  electronic and total where applicable
+- `errors_hartree`: absolute VQE error, signed variational gap, reference
+  cross-check errors
+- `checks`: booleans for Hermiticity, qubit consistency, convergence,
+  variational principle, accuracy target and independent references
+- `references`: exact diagonalization and FCI details
+- `optimization`: history (evaluation number, energy, parameters), counts,
+  convergence message, initial/final energies and parameters
+- `timing_seconds`: phase timings
+- `software`: Python and package versions
+- `warnings` and `artifacts`
+
+A minimal programmatic example:
+
+```python
+from quantum_vqe import ExperimentConfig, run_h2_experiment
+from quantum_vqe.plotting import plot_convergence
+
+config = ExperimentConfig(distance_angstrom=0.735, basis="sto3g")
+result = run_h2_experiment(config)
+print(result.status)
+print(result.energies_hartree["vqe_total"])
+print(result.energies_hartree["exact_qubit_total"])
+result.save("results/h2.json")
+plot_convergence(
+    result.optimization["history"],
+    "results/h2.png",
+    exact_energy=result.energies_hartree["exact_qubit_electronic"],
+    hf_energy=result.energies_hartree["hf_electronic"],
+)
+```
+
