@@ -195,3 +195,38 @@ These are consistency checks, not a proof that the chosen basis set is
 physically complete. STO-3G is a minimal basis and is not quantitatively
 accurate for real chemistry.
 
+## Installation
+
+### Requirements
+
+- Linux, macOS, or Windows
+- Python 3.11–3.12
+- Prebuilt wheels for the tested Linux, macOS and Windows Python versions; no
+  compiler is required when wheels are available. PySCF is installed through
+  the `qiskit-nature[pyscf]` extra.
+- No GPU, quantum cloud credentials, or network access at run time
+
+### Dependencies
+
+The tested versions are listed in the experiment report. The declared ranges
+are intentionally compatible with current releases:
+
+| Package | Role | Declared range |
+| --- | --- | --- |
+| `qiskit` | circuits, operators, primitives, exact statevector simulator | `>=2.1,<3.0` |
+| `qiskit-nature[pyscf]` | chemistry problem, mappings, Hartree-Fock/UCCSD, PySCF driver | `>=0.8,<0.9` |
+| `pyscf` | mean-field integrals and independent FCI reference | via Qiskit Nature extra |
+| `numpy` | linear algebra and arrays | `>=2.0,<3.0` |
+| `scipy` | optimizer and sparse diagonalization | `>=1.11,<2.0` |
+| `matplotlib` | convergence plots and molecular schematic | `>=3.8,<4.0` |
+| `streamlit` | local interactive dashboard | `>=1.66,<2.0` (`.[web]`) |
+| `pandas` | dashboard tables and exports | `>=2.0,<3.0` (`.[web]`) |
+| `altair` | interactive convergence chart | `>=5.0,<7.0` (`.[web]`) |
+| `pylatexenc` | Qiskit Matplotlib circuit rendering | `>=2.10,<3.0` (`.[web]`) |
+| `pytest`, `pytest-cov`, `ruff` | development and CI | `.[dev]` |
+
+Qiskit Nature 0.8 is the current release used here. Older tutorials that call
+`QubitConverter` or the removed `qiskit_nature.algorithms` VQE classes target
+older APIs; this project uses the current `second_q` API and a small explicit
+VQE loop.
+
