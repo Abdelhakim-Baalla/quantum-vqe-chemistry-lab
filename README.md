@@ -230,3 +230,35 @@ Qiskit Nature 0.8 is the current release used here. Older tutorials that call
 older APIs; this project uses the current `second_q` API and a small explicit
 VQE loop.
 
+## Running experiments
+
+```bash
+python -m quantum_vqe run-h2 [options]
+```
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `--distance ANGSTROM` | `0.735` | H–H bond length |
+| `--basis NAME` | `sto3g` | PySCF basis set |
+| `--mapping {parity,jordan-wigner}` | `parity` | fermion-to-qubit mapping |
+| `--reduce` / `--no-reduce` | reduction on for parity | two-qubit Z2 tapering |
+| `--optimizer NAME` | `L-BFGS-B` | SciPy optimizer |
+| `--max-iterations N` | `500` | optimizer iteration cap |
+| `--tolerance TOL` | optimizer-specific | optimizer convergence tolerance |
+| `--init {hf,random}` | `hf` | initial UCCSD angles |
+| `--seed N` | `7` | seed for random initial angles |
+| `--output-dir DIR` | `results` | directory for timestamped JSON |
+| `--json PATH` | timestamped file | explicit JSON path |
+| `--plot` | off | write a PNG convergence plot |
+
+Examples:
+
+```bash
+python -m quantum_vqe run-h2 --distance 0.735 --basis sto3g --plot
+python -m quantum_vqe run-h2 --mapping jordan-wigner --json results/h2_jw.json
+python -m quantum_vqe run-h2 --optimizer SLSQP --max-iterations 200
+```
+
+The program is deterministic for the default Hartree-Fock start and exact
+simulator. Random starts are reproducible when the seed is fixed.
+
