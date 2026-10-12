@@ -62,3 +62,30 @@ The installed entry point is equivalent to the module invocation:
 quantum-vqe run-h2 --distance 0.735
 ```
 
+## What VQE does
+
+A quantum chemistry problem can be written as a **Hamiltonian** \(\hat H\):
+an operator whose eigenvalues are the allowed energies of the molecule. The
+lowest eigenvalue is the ground-state energy.
+
+VQE is a hybrid quantum/classical algorithm:
+
+1. A quantum circuit prepares a parameterized state
+   \(|\psi(\boldsymbol\theta)\rangle\).
+2. The quantum simulator measures the expectation value
+   \(E(\boldsymbol\theta)=\langle\psi(\boldsymbol\theta)|\hat H|\psi(\boldsymbol\theta)\rangle\).
+3. A classical optimizer changes \(\boldsymbol\theta\) to lower \(E\).
+4. Steps 2–3 repeat until convergence.
+
+The variational principle says that for any normalized trial state,
+
+\[
+E(\boldsymbol\theta) \ge E_0,
+\]
+
+where \(E_0\) is the exact ground-state energy. A lower energy is therefore
+better, and the exact result provides an independent certificate: a correct
+VQE result cannot be below \(E_0\) beyond numerical noise. VQE is a heuristic;
+it does not guarantee finding the global minimum, and its accuracy depends on
+the ansatz and optimizer.
+
