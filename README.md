@@ -262,3 +262,19 @@ python -m quantum_vqe run-h2 --optimizer SLSQP --max-iterations 200
 The program is deterministic for the default Hartree-Fock start and exact
 simulator. Random starts are reproducible when the seed is fixed.
 
+## Examples
+
+The CLI is the primary interface, but the experiment is also a normal Python
+API. The checked-in example mirrors the full workflow without argparse:
+
+```bash
+python examples/run_h2.py
+python examples/run_h2.py --distance 0.9 --optimizer BFGS
+python examples/run_h2.py --mapping jordan-wigner --output-dir results/jw
+```
+
+It prints a short summary and writes a JSON result plus a convergence plot
+under `results/`, which is ignored by git. The script is intentionally small:
+it calls `run_h2_experiment`, saves the result, and plots the recorded
+optimization history.
+
