@@ -322,3 +322,43 @@ plot_convergence(
 )
 ```
 
+## Tests
+
+Fast unit tests and the full chemistry integration tests are separated with the
+`integration` marker.
+
+```bash
+# Full suite (unit + integration)
+pytest -q
+
+# Fast checks only, no PySCF chemistry pipeline
+pytest -q -m "not integration"
+
+# Chemistry pipeline and CLI only
+pytest -q -m integration
+```
+
+Coverage and linting:
+
+```bash
+pytest --cov=quantum_vqe --cov-report=term-missing
+ruff check .
+ruff format --check .
+```
+
+The unit suite checks configuration validation, operator Hermiticity, exact
+diagonalization, energy errors, estimator/statevector agreement, the VQE loop,
+serialization, no-false-success status logic and the Streamlit-independent web
+helpers. Integration tests run the actual H₂ pipeline, compare against FCI and
+JW references, exercise the CLI, reload the JSON result, and run a real H₂
+experiment through Streamlit's `AppTest` UI harness. In the tested environment
+the suite reports **99 unit tests** and **17 integration tests** (116 total),
+all passing, with 89% statement coverage for the `quantum_vqe` package. CLI
+subprocess behavior and the server-side AppTest UI harness are tested directly
+but are not attributed to that in-process coverage total.
+
+The CI workflow in `.github/workflows/ci.yml` installs `.[dev,web]` and runs
+linting, formatting checks, unit tests and the chemistry/UI integration tests
+on Python 3.11 and 3.12. The workflow file is checked in, but a GitHub Actions
+run is not claimed as verified from this local environment.
+
