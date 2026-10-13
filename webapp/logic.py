@@ -78,3 +78,14 @@ class UIRun:
     circuit_error: str | None = None
 
 
+def resolve_output_dir(value: str | Path) -> Path:
+    """Validate an output directory without creating it."""
+    text = str(value).strip()
+    if not text:
+        raise UIValidationError("Output directory cannot be empty.")
+    path = Path(text).expanduser()
+    if path.exists() and not path.is_dir():
+        raise UIValidationError(f"Output path exists but is not a directory: {path}")
+    return path
+
+
