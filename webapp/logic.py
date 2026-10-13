@@ -32,3 +32,20 @@ class UIValidationError(ValueError):
     """Raised when a web form value cannot form a valid experiment."""
 
 
+@dataclass(frozen=True)
+class UIConfigInput:
+    """Raw values collected from the web form."""
+
+    molecule: str
+    distance_angstrom: float
+    basis: str
+    ansatz: str
+    mapping: str
+    two_qubit_reduction: bool
+    optimizer: str
+    max_iterations: int
+    initial_point: str
+    seed: int
+    output_dir: str
+
+
