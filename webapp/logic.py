@@ -49,3 +49,21 @@ class UIConfigInput:
     output_dir: str
 
 
+@dataclass(frozen=True)
+class CircuitArtifacts:
+    """Pre-rendered, Qiskit-free data for the circuit explorer.
+
+    Qiskit work is performed in the run thread. The Streamlit script may rerun
+    in a different thread, so the UI only consumes these immutable artifacts.
+    """
+
+    summary: dict[str, object]
+    summary_frame: pd.DataFrame
+    parameter_frame: pd.DataFrame
+    gate_counts_frame: pd.DataFrame
+    diagram_basis_png: bytes
+    diagram_pauli_png: bytes
+    diagram_as_built_png: bytes
+    text_diagram: str
+
+
