@@ -67,3 +67,14 @@ class CircuitArtifacts:
     text_diagram: str
 
 
+@dataclass
+class UIRun:
+    """One real experiment, including the exact objects used by the VQE."""
+
+    result: ExperimentResult
+    chemistry: ChemistryData
+    elapsed_s: float
+    circuit: CircuitArtifacts | None = None
+    circuit_error: str | None = None
+
+
