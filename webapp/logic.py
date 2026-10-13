@@ -1,0 +1,30 @@
+"""Streamlit-independent logic for the Quantum Lab web interface.
+
+The scientific implementation lives in :mod:`quantum_vqe`. This module only
+validates UI inputs, orchestrates one run, and formats real result records for
+display and export. It deliberately does not import Streamlit.
+"""
+
+from __future__ import annotations
+
+import json
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+import pandas as pd
+
+if TYPE_CHECKING:
+    from quantum_vqe import ExperimentConfig
+    from quantum_vqe.chemistry import ChemistryData
+    from quantum_vqe.results import ExperimentResult
+
+MOLECULES = ("H2",)
+BASES = ("sto3g",)
+ANSATZE = ("UCCSD",)
+MAPPINGS = ("parity", "jordan-wigner")
+OPTIMIZERS = ("L-BFGS-B", "BFGS", "SLSQP", "COBYLA", "Nelder-Mead")
+INITIAL_POINTS = ("hf", "random")
+
+
