@@ -28,3 +28,7 @@ OPTIMIZERS = ("L-BFGS-B", "BFGS", "SLSQP", "COBYLA", "Nelder-Mead")
 INITIAL_POINTS = ("hf", "random")
 
 
+class UIValidationError(ValueError):
+    """Raised when a web form value cannot form a valid experiment."""
+
+
