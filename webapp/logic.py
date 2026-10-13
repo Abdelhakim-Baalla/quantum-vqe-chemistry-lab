@@ -89,3 +89,54 @@ def resolve_output_dir(value: str | Path) -> Path:
     return path
 
 
+def build_experiment_config(values: UIConfigInput) -> ExperimentConfig:
+    """Validate web form values and construct the scientific configuration."""
+    if values.molecule not in MOLECULES:
+        raise UIValidationError(
+            f"Only {', '.join(MOLECULES)} is implemented; got molecule={values.molecule!r}."
+        )
+    if values.basis not in BASES:
+        raise UIValidationError(
+            f"Basis {values.basis!r} is not exposed by this UI. "
+            f"Validated options: {', '.join(BASES)}."
+        )
+    if values.ansatz not in ANSATZE:
+        raise UIValidationError(
+            f"Ansatz {values.ansatz!r} is not implemented. Validated options: {', '.join(ANSATZE)}."
+        )
+    if values.mapping not in MAPPINGS:
+        raise UIValidationError(f"Unknown mapping: {values.mapping!r}.")
+    if values.optimizer not in OPTIMIZERS:
+        raise UIValidationError(f"Unknown optimizer: {values.optimizer!r}.")
+    if values.initial_point not in INITIAL_POINTS:
+        raise UIValidationError(f"Unknown initial point: {values.initial_point!r}.")
+    if values.mapping == "jordan-wigner" and values.two_qubit_reduction:
+        raise UIValidationError(
+            "Jordan-Wigner mapping does not support the two-qubit Z2 reduction. "
+            "Disable the reduction or select parity mapping."
+        )
+
+    resolve_output_dir(values.output_dir)
+
+    # Import lazily so the initial Streamlit render does not load Qiskit/PySCF.
+    # This also keeps imports inside the Streamlit script-run thread that will
+    # execute the scientific pipeline.
+    from quantum_vqe import ExperimentConfig
+
+    try:
+        return ExperimentConfig(
+            distance_angstrom=values.distance_angstrom,
+            basis=values.basis,
+            mapping=values.mapping,
+            two_qubit_reduction=(
+                values.two_qubit_reduction if values.mapping == "parity" else False
+            ),
+            optimizer=values.optimizer,
+            max_iterations=values.max_iterations,
+            initial_point=values.initial_point,
+            seed=values.seed,
+        )
+    except ValueError as exc:
+        raise UIValidationError(str(exc)) from exc
+
+
