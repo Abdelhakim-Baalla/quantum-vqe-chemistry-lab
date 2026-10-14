@@ -206,3 +206,29 @@ def execute_experiment(config: ExperimentConfig) -> UIRun:
     )
 
 
+def history_rows(entries: list[UIRun]) -> list[dict[str, Any]]:
+    """Return display/export rows derived only from completed real runs."""
+    rows: list[dict[str, Any]] = []
+    for index, entry in enumerate(entries, start=1):
+        result = entry.result
+        error = result.errors_hartree["absolute_vqe_vs_exact_total"]
+        rows.append(
+            {
+                "run": index,
+                "timestamp_utc": result.created_utc,
+                "distance_A": result.molecule["bond_length_angstrom"],
+                "basis": result.molecule["basis"],
+                "mapping": result.hamiltonian["mapping"],
+                "optimizer": result.optimizer["name"],
+                "vqe_total_Ha": result.energies_hartree["vqe_total"],
+                "exact_total_Ha": result.energies_hartree["exact_qubit_total"],
+                "abs_error_Ha": error,
+                "abs_error_mHa": None if error is None else error * 1000.0,
+                "converged": result.optimization["converged"],
+                "status": result.status,
+                "elapsed_s": entry.elapsed_s,
+            }
+        )
+    return rows
+
+
