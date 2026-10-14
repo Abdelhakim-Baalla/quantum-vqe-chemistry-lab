@@ -267,3 +267,9 @@ def save_result(result: ExperimentResult, output_dir: str | Path) -> Path:
     return result.save(path)
 
 
+def history_json(entries: list[UIRun]) -> str:
+    """Export all completed results as one JSON array."""
+    payload = [entry.result.to_dict() for entry in entries]
+    return json.dumps(payload, indent=2, allow_nan=False) + "\n"
+
+
