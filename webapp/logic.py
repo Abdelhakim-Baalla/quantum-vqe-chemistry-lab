@@ -237,3 +237,13 @@ def history_frame(entries: list[UIRun]) -> pd.DataFrame:
     return pd.DataFrame(history_rows(entries))
 
 
+def history_labels(entries: list[UIRun]) -> list[str]:
+    """Human-readable labels for selecting a completed run."""
+    labels: list[str] = []
+    for index, entry in enumerate(entries, start=1):
+        energy = entry.result.energies_hartree["vqe_total"]
+        energy_text = "n/a" if energy is None else f"{energy:.9f} Ha"
+        labels.append(f"Run {index} · {entry.result.created_utc} · VQE {energy_text}")
+    return labels
+
+
