@@ -247,3 +247,11 @@ def history_labels(entries: list[UIRun]) -> list[str]:
     return labels
 
 
+def result_filename(result: ExperimentResult) -> str:
+    """Return a filesystem-safe JSON filename tied to the result timestamp."""
+    # created_utc is an ISO-8601 UTC timestamp; drop separators and the offset.
+    stamp = "".join(character for character in result.created_utc[:19] if character.isalnum())
+    mapping = str(result.hamiltonian["mapping"]).replace("-", "_")
+    return f"h2_vqe_{stamp}_{mapping}.json"
+
+
