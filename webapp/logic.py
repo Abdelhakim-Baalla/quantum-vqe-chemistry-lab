@@ -273,3 +273,8 @@ def history_json(entries: list[UIRun]) -> str:
     return json.dumps(payload, indent=2, allow_nan=False) + "\n"
 
 
+def history_csv(entries: list[UIRun]) -> str:
+    """Export the comparison table as CSV."""
+    return history_frame(entries).to_csv(index=False)
+
+
