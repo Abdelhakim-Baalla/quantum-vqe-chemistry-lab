@@ -255,3 +255,15 @@ def result_filename(result: ExperimentResult) -> str:
     return f"h2_vqe_{stamp}_{mapping}.json"
 
 
+def save_result(result: ExperimentResult, output_dir: str | Path) -> Path:
+    """Save a result atomically, avoiding accidental filename collisions."""
+    directory = resolve_output_dir(output_dir)
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / result_filename(result)
+    counter = 2
+    while path.exists():
+        path = directory / f"{path.stem.rsplit('_', 1)[0]}_{counter}.json"
+        counter += 1
+    return result.save(path)
+
+
