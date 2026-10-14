@@ -140,3 +140,69 @@ def build_experiment_config(values: UIConfigInput) -> ExperimentConfig:
         raise UIValidationError(str(exc)) from exc
 
 
+def execute_experiment(config: ExperimentConfig) -> UIRun:
+    """Build the chemistry once, then run the existing VQE implementation.
+
+    The pre-built chemistry object is passed into ``run_h2_experiment`` so the
+    circuit shown in the UI is the exact ansatz object used by the run, not a
+    second decorative reconstruction.
+    """
+    # Keep scientific imports inside the run path. Loading Qiskit/PySCF on the
+    # initial Streamlit render and then using them from a later script-run
+    # thread can crash the embedded Qiskit Rust extension.
+    from quantum_vqe import run_h2_experiment
+    from quantum_vqe.chemistry import build_chemistry
+
+    started = time.perf_counter()
+    chemistry = build_chemistry(config)
+    result = run_h2_experiment(config, chemistry=chemistry)
+
+    circuit: CircuitArtifacts | None = None
+    circuit_error: str | None = None
+    try:
+        # This import is lazy as well: visuals has no Qiskit import, and all
+        # circuit introspection happens here, before the result is shown.
+        from webapp import visuals
+
+        summary = visuals.circuit_summary(chemistry.ansatz)
+        summary_frame = pd.DataFrame(
+            [
+                {
+                    "Level": "As built",
+                    "Depth": summary["depth_as_built"],
+                    "Size": summary["size_as_built"],
+                },
+                {
+                    "Level": "Pauli evolution",
+                    "Depth": summary["depth_pauli"],
+                    "Size": summary["size_pauli"],
+                },
+                {
+                    "Level": "Basis gates",
+                    "Depth": summary["depth_decomposed"],
+                    "Size": summary["size_decomposed"],
+                },
+            ]
+        )
+        circuit = CircuitArtifacts(
+            summary=summary,
+            summary_frame=summary_frame,
+            parameter_frame=visuals.parameter_frame(result, chemistry.ansatz),
+            gate_counts_frame=visuals.gate_counts_frame(chemistry.ansatz),
+            diagram_basis_png=visuals.circuit_png(chemistry.ansatz, reps=2),
+            diagram_pauli_png=visuals.circuit_png(chemistry.ansatz, reps=1),
+            diagram_as_built_png=visuals.circuit_png(chemistry.ansatz, reps=0),
+            text_diagram=str(chemistry.ansatz.draw("text")),
+        )
+    except Exception as exc:  # a valid scientific result should still be shown
+        circuit_error = f"{type(exc).__name__}: {exc}"
+
+    return UIRun(
+        result=result,
+        chemistry=chemistry,
+        elapsed_s=time.perf_counter() - started,
+        circuit=circuit,
+        circuit_error=circuit_error,
+    )
+
+
