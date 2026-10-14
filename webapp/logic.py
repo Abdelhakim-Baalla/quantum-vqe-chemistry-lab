@@ -232,3 +232,8 @@ def history_rows(entries: list[UIRun]) -> list[dict[str, Any]]:
     return rows
 
 
+def history_frame(entries: list[UIRun]) -> pd.DataFrame:
+    """Return the experiment history as a pandas DataFrame."""
+    return pd.DataFrame(history_rows(entries))
+
+
