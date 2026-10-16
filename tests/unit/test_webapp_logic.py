@@ -95,3 +95,10 @@ def test_build_config_rejects_invalid_distance(valid_values: logic.UIConfigInput
         logic.build_experiment_config(replace(valid_values, distance_angstrom=-0.5))
 
 
+def test_build_config_rejects_empty_output_directory(
+    valid_values: logic.UIConfigInput,
+) -> None:
+    with pytest.raises(logic.UIValidationError, match="cannot be empty"):
+        logic.build_experiment_config(replace(valid_values, output_dir="   "))
+
+
