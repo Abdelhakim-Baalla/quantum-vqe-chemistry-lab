@@ -81,3 +81,12 @@ def test_build_config_rejects_jordan_wigner_with_reduction(
         logic.build_experiment_config(values)
 
 
+def test_build_config_allows_jordan_wigner_without_reduction(
+    valid_values: logic.UIConfigInput,
+) -> None:
+    values = replace(valid_values, mapping="jordan-wigner", two_qubit_reduction=False)
+    config = logic.build_experiment_config(values)
+    assert config.mapping == "jordan-wigner"
+    assert config.two_qubit_reduction is False
+
+
