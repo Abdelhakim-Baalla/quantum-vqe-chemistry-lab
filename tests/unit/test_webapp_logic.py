@@ -73,3 +73,11 @@ def test_build_config_rejects_unsupported_options(
         logic.build_experiment_config(replace(valid_values, **{field: value}))
 
 
+def test_build_config_rejects_jordan_wigner_with_reduction(
+    valid_values: logic.UIConfigInput,
+) -> None:
+    values = replace(valid_values, mapping="jordan-wigner", two_qubit_reduction=True)
+    with pytest.raises(logic.UIValidationError, match="does not support"):
+        logic.build_experiment_config(values)
+
+
