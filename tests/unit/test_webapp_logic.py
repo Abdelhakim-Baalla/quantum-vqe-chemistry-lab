@@ -52,3 +52,24 @@ def test_build_config_maps_form_values(valid_values: logic.UIConfigInput) -> Non
     assert config.seed == 7
 
 
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("molecule", "LiH", "Only H2"),
+        ("basis", "6-31g", "not exposed"),
+        ("ansatz", "QAOA", "not implemented"),
+        ("mapping", "bravyi-kitaev", "Unknown mapping"),
+        ("optimizer", "Powell", "Unknown optimizer"),
+        ("initial_point", "zero", "Unknown initial point"),
+    ],
+)
+def test_build_config_rejects_unsupported_options(
+    valid_values: logic.UIConfigInput,
+    field: str,
+    value: str,
+    message: str,
+) -> None:
+    with pytest.raises(logic.UIValidationError, match=message):
+        logic.build_experiment_config(replace(valid_values, **{field: value}))
+
+
