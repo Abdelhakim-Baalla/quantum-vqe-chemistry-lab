@@ -90,3 +90,8 @@ def test_build_config_allows_jordan_wigner_without_reduction(
     assert config.two_qubit_reduction is False
 
 
+def test_build_config_rejects_invalid_distance(valid_values: logic.UIConfigInput) -> None:
+    with pytest.raises(logic.UIValidationError, match="distance_angstrom"):
+        logic.build_experiment_config(replace(valid_values, distance_angstrom=-0.5))
+
+
