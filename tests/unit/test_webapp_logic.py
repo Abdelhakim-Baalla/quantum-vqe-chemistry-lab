@@ -102,3 +102,12 @@ def test_build_config_rejects_empty_output_directory(
         logic.build_experiment_config(replace(valid_values, output_dir="   "))
 
 
+def test_build_config_rejects_output_file(
+    valid_values: logic.UIConfigInput, tmp_path: Path
+) -> None:
+    output_file = tmp_path / "already-a-file"
+    output_file.write_text("not a directory", encoding="utf-8")
+    with pytest.raises(logic.UIValidationError, match="not a directory"):
+        logic.build_experiment_config(replace(valid_values, output_dir=str(output_file)))
+
+
