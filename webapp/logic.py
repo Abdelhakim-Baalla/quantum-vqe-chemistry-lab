@@ -278,3 +278,7 @@ def history_csv(entries: list[UIRun]) -> str:
     return history_frame(entries).to_csv(index=False)
 
 
+def absolute_error_mha(result: ExperimentResult) -> float | None:
+    """Return the headline absolute error in milli-Hartree."""
+    error = result.errors_hartree["absolute_vqe_vs_exact_total"]
+    return None if error is None else float(error) * 1000.0
