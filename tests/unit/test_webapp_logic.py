@@ -39,3 +39,16 @@ def valid_values() -> logic.UIConfigInput:
     )
 
 
+def test_build_config_maps_form_values(valid_values: logic.UIConfigInput) -> None:
+    config = logic.build_experiment_config(valid_values)
+
+    assert config.distance_angstrom == pytest.approx(0.735)
+    assert config.basis == "sto3g"
+    assert config.mapping == "parity"
+    assert config.two_qubit_reduction is True
+    assert config.optimizer == "L-BFGS-B"
+    assert config.max_iterations == 500
+    assert config.initial_point == "hf"
+    assert config.seed == 7
+
+
