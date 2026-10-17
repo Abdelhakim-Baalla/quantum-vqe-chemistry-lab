@@ -199,3 +199,18 @@ def test_history_labels_include_real_energy(official_result: ExperimentResult) -
     assert f"{official_result.energies_hartree['vqe_total']:.9f} Ha" in label
 
 
+def test_save_result_roundtrips_and_avoids_collision(
+    official_result: ExperimentResult, tmp_path: Path
+) -> None:
+    first = logic.save_result(official_result, tmp_path)
+    second = logic.save_result(official_result, tmp_path)
+
+    assert first.exists()
+    assert second.exists()
+    assert first != second
+    assert first.suffix == ".json"
+    assert ":" not in first.name
+    assert ExperimentResult.load(first).to_dict() == official_result.to_dict()
+    assert ExperimentResult.load(second).to_dict() == official_result.to_dict()
+
+
