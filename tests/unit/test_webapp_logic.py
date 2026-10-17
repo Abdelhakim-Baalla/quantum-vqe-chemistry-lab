@@ -142,3 +142,19 @@ def test_execute_experiment_calls_existing_scientific_layer(
     assert run.circuit_error is not None
 
 
+def test_execute_experiment_propagates_scientific_failure(
+    monkeypatch: pytest.MonkeyPatch,
+    valid_values: logic.UIConfigInput,
+) -> None:
+    config = logic.build_experiment_config(valid_values)
+    monkeypatch.setattr("quantum_vqe.chemistry.build_chemistry", lambda config: SimpleNamespace())
+
+    def fail(config, *, chemistry):  # noqa: ANN001
+        raise RuntimeError("solver failed")
+
+    monkeypatch.setattr("quantum_vqe.run_h2_experiment", fail)
+
+    with pytest.raises(RuntimeError, match="solver failed"):
+        logic.execute_experiment(config)
+
+
