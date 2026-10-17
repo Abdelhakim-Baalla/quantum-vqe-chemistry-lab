@@ -193,3 +193,9 @@ def test_history_rows_and_exports_preserve_real_values(
     assert "abs_error_mHa" in csv_text
 
 
+def test_history_labels_include_real_energy(official_result: ExperimentResult) -> None:
+    entry = logic.UIRun(official_result, None, 0.25, circuit=None)  # type: ignore[arg-type]
+    label = logic.history_labels([entry])[0]
+    assert f"{official_result.energies_hartree['vqe_total']:.9f} Ha" in label
+
+
