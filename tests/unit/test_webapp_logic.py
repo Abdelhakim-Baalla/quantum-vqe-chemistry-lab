@@ -158,3 +158,8 @@ def test_execute_experiment_propagates_scientific_failure(
         logic.execute_experiment(config)
 
 
+def test_absolute_error_mha_matches_result(official_result: ExperimentResult) -> None:
+    expected = official_result.errors_hartree["absolute_vqe_vs_exact_total"] * 1000.0
+    assert logic.absolute_error_mha(official_result) == pytest.approx(expected)
+
+
