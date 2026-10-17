@@ -111,3 +111,34 @@ def test_build_config_rejects_output_file(
         logic.build_experiment_config(replace(valid_values, output_dir=str(output_file)))
 
 
+def test_execute_experiment_calls_existing_scientific_layer(
+    monkeypatch: pytest.MonkeyPatch,
+    valid_values: logic.UIConfigInput,
+    official_result: ExperimentResult,
+) -> None:
+    config = logic.build_experiment_config(valid_values)
+    chemistry = SimpleNamespace()
+    calls: dict[str, object] = {}
+
+    def fake_build(received_config):  # noqa: ANN001
+        calls["build"] = received_config
+        return chemistry
+
+    def fake_run(received_config, *, chemistry):  # noqa: ANN001
+        calls["run"] = (received_config, chemistry)
+        return official_result
+
+    monkeypatch.setattr("quantum_vqe.chemistry.build_chemistry", fake_build)
+    monkeypatch.setattr("quantum_vqe.run_h2_experiment", fake_run)
+
+    run = logic.execute_experiment(config)
+
+    assert calls["build"] is config
+    assert calls["run"] == (config, chemistry)
+    assert run.result is official_result
+    assert run.chemistry is chemistry
+    assert run.elapsed_s >= 0.0
+    assert run.circuit is None
+    assert run.circuit_error is not None
+
+
