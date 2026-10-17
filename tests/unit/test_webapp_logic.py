@@ -214,3 +214,8 @@ def test_save_result_roundtrips_and_avoids_collision(
     assert ExperimentResult.load(second).to_dict() == official_result.to_dict()
 
 
+def test_save_result_rejects_file_path(official_result: ExperimentResult, tmp_path: Path) -> None:
+    output_file = tmp_path / "not-a-directory"
+    output_file.write_text("content", encoding="utf-8")
+    with pytest.raises(logic.UIValidationError, match="not a directory"):
+        logic.save_result(official_result, output_file)
