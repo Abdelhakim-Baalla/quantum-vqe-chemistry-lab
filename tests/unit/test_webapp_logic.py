@@ -163,3 +163,33 @@ def test_absolute_error_mha_matches_result(official_result: ExperimentResult) ->
     assert logic.absolute_error_mha(official_result) == pytest.approx(expected)
 
 
+def test_history_rows_and_exports_preserve_real_values(
+    official_result: ExperimentResult,
+) -> None:
+    entry = logic.UIRun(
+        result=official_result,
+        chemistry=None,  # type: ignore[arg-type]
+        elapsed_s=0.75,
+        circuit=None,
+    )
+    rows = logic.history_rows([entry])
+    assert len(rows) == 1
+    assert rows[0]["vqe_total_Ha"] == official_result.energies_hartree["vqe_total"]
+    assert rows[0]["exact_total_Ha"] == official_result.energies_hartree["exact_qubit_total"]
+    assert rows[0]["abs_error_Ha"] == official_result.errors_hartree["absolute_vqe_vs_exact_total"]
+    assert rows[0]["abs_error_mHa"] == pytest.approx(
+        official_result.errors_hartree["absolute_vqe_vs_exact_total"] * 1000.0
+    )
+    assert rows[0]["converged"] is True
+
+    frame = logic.history_frame([entry])
+    assert frame.loc[0, "status"] == official_result.status
+
+    exported = json.loads(logic.history_json([entry]))
+    assert exported == [official_result.to_dict()]
+
+    csv_text = logic.history_csv([entry])
+    assert "vqe_total_Ha" in csv_text
+    assert "abs_error_mHa" in csv_text
+
+
