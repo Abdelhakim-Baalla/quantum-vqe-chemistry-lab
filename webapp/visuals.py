@@ -48,3 +48,22 @@ _CIRCUIT_STYLE = {
 }
 
 
+def convergence_frame(result: ExperimentResult) -> pd.DataFrame:
+    """Return the recorded optimizer history with a cumulative best-so-far."""
+    history = result.optimization.get("history")
+    if not history:
+        raise ValueError("The result contains no optimizer history to plot.")
+
+    frame = pd.DataFrame(history)
+    required = {"evaluation", "energy_hartree"}
+    missing = required.difference(frame.columns)
+    if missing:
+        raise ValueError(f"Optimizer history is missing required columns: {sorted(missing)}")
+
+    frame = frame[["evaluation", "energy_hartree"]].copy()
+    frame["evaluation"] = frame["evaluation"].astype(int)
+    frame["energy_hartree"] = frame["energy_hartree"].astype(float)
+    frame["best_so_far_hartree"] = frame["energy_hartree"].cummin()
+    return frame
+
+
