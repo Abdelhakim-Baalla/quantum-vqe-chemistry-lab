@@ -311,3 +311,15 @@ def parameter_frame(result: ExperimentResult, circuit: QuantumCircuit) -> pd.Dat
     )
 
 
+def gate_counts_frame(circuit: QuantumCircuit) -> pd.DataFrame:
+    """Return gate counts for the ansatz and its two decomposition levels."""
+    summary = circuit_summary(circuit)
+    rows: list[dict[str, object]] = []
+    for level, key in (
+        ("As built", "ops_as_built"),
+        ("Pauli evolution", "ops_pauli"),
+        ("Basis gates", "ops_decomposed"),
+    ):
+        for gate, count in summary[key].items():  # type: ignore[union-attr]
+            rows.append({"Decomposition": level, "Gate": gate, "Count": count})
+    return pd.DataFrame(rows)
