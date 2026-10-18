@@ -156,3 +156,65 @@ def convergence_chart(result: ExperimentResult) -> alt.Chart:
     )
 
 
+def molecule_figure(distance_angstrom: float) -> plt.Figure:
+    """Draw a clearly illustrative H-H geometry at the selected distance."""
+    distance = float(distance_angstrom)
+    if not math.isfinite(distance) or distance <= 0:
+        raise ValueError("distance_angstrom must be a positive finite number")
+
+    radius = 0.20
+    fig, ax = plt.subplots(figsize=(5.4, 2.4), dpi=150)
+    fig.patch.set_facecolor("#0b1120")
+    ax.set_facecolor("#0b1120")
+
+    left = -distance / 2.0
+    right = distance / 2.0
+    ax.plot(
+        [left, right],
+        [0.0, 0.0],
+        color="#475569",
+        linewidth=5,
+        solid_capstyle="round",
+        zorder=1,
+    )
+    for x_position in (left, right):
+        ax.add_patch(
+            Circle(
+                (x_position, 0.0),
+                radius,
+                facecolor="#0ea5e9",
+                edgecolor="#7dd3fc",
+                linewidth=1.5,
+                zorder=2,
+            )
+        )
+        ax.text(
+            x_position,
+            0.0,
+            "H",
+            ha="center",
+            va="center",
+            color="#f8fafc",
+            fontsize=16,
+            fontweight="bold",
+            zorder=3,
+        )
+
+    ax.text(
+        0.0,
+        -0.58,
+        f"{distance:.3f} Å",
+        ha="center",
+        va="center",
+        color="#cbd5e1",
+        fontsize=11,
+    )
+    x_span = max(distance / 2.0 + 0.75, 1.15)
+    ax.set_xlim(-x_span, x_span)
+    ax.set_ylim(-0.85, 0.65)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    fig.tight_layout(pad=0.4)
+    return fig
+
+
