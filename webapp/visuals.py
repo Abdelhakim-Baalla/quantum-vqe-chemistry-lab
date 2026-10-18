@@ -293,3 +293,21 @@ def circuit_png(circuit: QuantumCircuit, *, reps: int = 2) -> bytes:
     return buffer.getvalue()
 
 
+def parameter_frame(result: ExperimentResult, circuit: QuantumCircuit) -> pd.DataFrame:
+    """Map the optimized parameter vector back to the circuit parameters."""
+    names = [parameter.name for parameter in circuit.parameters]
+    initial = list(result.optimization.get("initial_parameters") or [])
+    final = list(result.optimization.get("final_parameters") or [])
+    if not (len(names) == len(initial) == len(final)):
+        raise ValueError(
+            "Circuit parameters and optimizer parameter vectors have different lengths."
+        )
+    return pd.DataFrame(
+        {
+            "Parameter": names,
+            "Initial value (rad)": initial,
+            "Optimized value (rad)": final,
+        }
+    )
+
+
