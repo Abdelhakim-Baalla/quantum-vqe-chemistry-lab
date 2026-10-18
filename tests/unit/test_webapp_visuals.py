@@ -62,3 +62,12 @@ def test_convergence_chart_contains_only_recorded_trace_and_real_references(
     assert hf["energy"] == official_result.energies_hartree["hf_electronic"]
 
 
+def test_molecule_figure_is_labeled_geometry_not_an_orbital() -> None:
+    figure = visuals.molecule_figure(0.735)
+    labels = [text.get_text() for text in figure.axes[0].texts]
+    plt.close(figure)
+
+    assert labels.count("H") == 2
+    assert "0.735 Å" in labels
+
+
