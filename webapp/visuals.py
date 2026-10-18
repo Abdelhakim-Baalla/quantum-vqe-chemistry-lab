@@ -218,3 +218,22 @@ def molecule_figure(distance_angstrom: float) -> plt.Figure:
     return fig
 
 
+def circuit_summary(circuit: QuantumCircuit) -> dict[str, object]:
+    """Summarize the actual ansatz and its decompositions."""
+    pauli_circuit = circuit.decompose(reps=1)
+    gate_circuit = circuit.decompose(reps=2)
+    return {
+        "num_qubits": circuit.num_qubits,
+        "num_parameters": circuit.num_parameters,
+        "depth_as_built": circuit.depth(),
+        "size_as_built": circuit.size(),
+        "depth_pauli": pauli_circuit.depth(),
+        "size_pauli": pauli_circuit.size(),
+        "depth_decomposed": gate_circuit.depth(),
+        "size_decomposed": gate_circuit.size(),
+        "ops_as_built": dict(circuit.count_ops()),
+        "ops_pauli": dict(pauli_circuit.count_ops()),
+        "ops_decomposed": dict(gate_circuit.count_ops()),
+    }
+
+
