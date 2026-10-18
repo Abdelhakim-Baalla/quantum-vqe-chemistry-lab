@@ -273,3 +273,23 @@ def circuit_figure(circuit: QuantumCircuit, *, reps: int = 2) -> plt.Figure:
     return fig
 
 
+def circuit_png(circuit: QuantumCircuit, *, reps: int = 2) -> bytes:
+    """Render a circuit to PNG bytes during the scientific run thread.
+
+    Streamlit can rerun the script in a different thread. Keeping Qiskit work in
+    the run path and displaying pre-rendered bytes on later reruns avoids
+    cross-thread use of the Qiskit extension.
+    """
+    fig = circuit_figure(circuit, reps=reps)
+    buffer = io.BytesIO()
+    fig.savefig(
+        buffer,
+        format="png",
+        facecolor=fig.get_facecolor(),
+        bbox_inches="tight",
+        dpi=150,
+    )
+    plt.close(fig)
+    return buffer.getvalue()
+
+
