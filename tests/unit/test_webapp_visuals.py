@@ -24,3 +24,18 @@ def official_result() -> ExperimentResult:
     return ExperimentResult.load(OFFICIAL_RESULT)
 
 
+def test_convergence_frame_uses_exact_recorded_points(
+    official_result: ExperimentResult,
+) -> None:
+    frame = visuals.convergence_frame(official_result)
+    history = official_result.optimization["history"]
+
+    assert len(frame) == len(history)
+    assert frame["evaluation"].tolist() == [point["evaluation"] for point in history]
+    assert frame["energy_hartree"].tolist() == [point["energy_hartree"] for point in history]
+    assert frame["best_so_far_hartree"].iloc[-1] == pytest.approx(
+        min(point["energy_hartree"] for point in history)
+    )
+    assert (frame["best_so_far_hartree"] <= frame["energy_hartree"] + 1e-15).all()
+
+
