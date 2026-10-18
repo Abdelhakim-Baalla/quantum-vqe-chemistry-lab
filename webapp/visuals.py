@@ -237,3 +237,39 @@ def circuit_summary(circuit: QuantumCircuit) -> dict[str, object]:
     }
 
 
+def circuit_figure(circuit: QuantumCircuit, *, reps: int = 2) -> plt.Figure:
+    """Render the executed ansatz with Qiskit's Matplotlib drawer.
+
+    ``reps=0`` draws the ansatz exactly as built. ``reps=1`` expands the UCCSD
+    evolution block into Pauli-evolution gates. ``reps=2`` expands those into
+    basis rotations and entangling gates. Decomposition preserves the unitary.
+    """
+    display_circuit = circuit if reps == 0 else circuit.decompose(reps=reps)
+    try:
+        fig = display_circuit.draw(
+            "mpl",
+            style=_CIRCUIT_STYLE,
+            fold=60,
+            scale=0.72,
+        )
+    except Exception:
+        # The text drawer is a robust fallback and still shows the real gates.
+        fig, axis = plt.subplots(figsize=(10.0, 2.6), dpi=150)
+        fig.patch.set_facecolor("#0b1120")
+        axis.set_facecolor("#0b1120")
+        axis.text(
+            0.0,
+            1.0,
+            str(display_circuit.draw("text")),
+            family="monospace",
+            color="#e5e7eb",
+            fontsize=8,
+            va="top",
+            ha="left",
+            transform=axis.transAxes,
+        )
+        axis.axis("off")
+    fig.patch.set_facecolor("#0b1120")
+    return fig
+
+
