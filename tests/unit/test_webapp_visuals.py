@@ -112,3 +112,14 @@ def test_parameter_frame_maps_recorded_vectors_to_circuit(
     )
 
 
+def test_gate_counts_frame_covers_all_decomposition_levels() -> None:
+    circuit = QuantumCircuit(2)
+    circuit.h(0)
+    circuit.cx(0, 1)
+
+    frame = visuals.gate_counts_frame(circuit)
+    assert set(frame["Decomposition"]) == {"As built", "Pauli evolution", "Basis gates"}
+    as_built = frame[frame["Decomposition"] == "As built"].set_index("Gate")["Count"]
+    assert as_built["h"] == 1
+    assert as_built["cx"] == 1
+    assert (frame["Count"] > 0).all()
