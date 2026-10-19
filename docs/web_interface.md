@@ -120,3 +120,48 @@ The convergence chart and molecule schematic are derived from real results or
 the selected configuration. The molecule drawing is explicitly labeled as an
 illustrative geometry, not an orbital or electron-density visualization.
 
+## 5. Testing
+
+The web tests are split between fast UI wiring and real execution:
+
+- `tests/unit/test_webapp_logic.py` covers input validation, unsupported
+  combinations, delegation to the scientific layer, error propagation,
+  milli-Hartree arithmetic, history records, JSON round-trips and collision-safe
+  saving.
+- `tests/unit/test_webapp_visuals.py` checks that convergence frames and chart
+  data contain the recorded history exactly, plus molecule labels and real
+  circuit summary/PNG/parameter tables.
+- `tests/unit/test_webapp_app.py` uses Streamlit `AppTest` for startup, absence
+  of fake metrics before a run, real-result display, execution failure,
+  missing-dependency messaging, and save-button wiring.
+- `tests/integration/test_webapp_real_run.py` executes a real H₂ experiment
+  through the UI harness, verifies its output against the returned scientific
+  result, checks that circuit artifacts exist, and reruns the script without
+  adding a duplicate history entry.
+
+Run all tests with:
+
+```bash
+.venv/bin/pytest -q
+```
+
+Graphical browser automation is not available in this environment. Verification
+uses Streamlit's AppTest harness plus a local server startup and health-endpoint
+check. That limitation is stated rather than replaced by an unverified
+screenshot claim.
+
+## 6. Limitations
+
+- Only H₂/STO-3G/UCCSD is implemented. Unsupported molecules, bases and ansatze
+  are rejected rather than silently mapped to another calculation.
+- The VQE loop does not expose per-iteration callbacks, so the UI shows a
+  spinner during execution rather than a fabricated progress percentage.
+- Session history is in memory and disappears when the Streamlit process or
+  browser session ends. Use the JSON export to preserve results.
+- The dashboard is single-user and local. It has no authentication, database,
+  job queue, deployment configuration or remote hardware integration.
+- The simulation is exact statevector simulation, not quantum hardware and not
+  a noise model. Agreement with exact diagonalization is a validation result,
+  not evidence of quantum advantage.
+- `AppTest` exercises the server-side script and widget behavior; it is not a
+  substitute for cross-browser visual regression testing.
