@@ -94,3 +94,21 @@ def test_circuit_summary_and_png_are_derived_from_real_circuit() -> None:
     assert len(png) > 1000
 
 
+def test_parameter_frame_maps_recorded_vectors_to_circuit(
+    official_result: ExperimentResult,
+) -> None:
+    parameters = [Parameter(f"t[{index}]") for index in range(3)]
+    circuit = QuantumCircuit(2)
+    for index, parameter in enumerate(parameters):
+        circuit.ry(parameter, index % 2)
+
+    frame = visuals.parameter_frame(official_result, circuit)
+    assert frame["Parameter"].tolist() == ["t[0]", "t[1]", "t[2]"]
+    assert (
+        frame["Initial value (rad)"].tolist() == official_result.optimization["initial_parameters"]
+    )
+    assert (
+        frame["Optimized value (rad)"].tolist() == official_result.optimization["final_parameters"]
+    )
+
+
