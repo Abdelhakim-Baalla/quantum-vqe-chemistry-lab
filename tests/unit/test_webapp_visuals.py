@@ -76,3 +76,21 @@ def test_molecule_figure_rejects_invalid_distance() -> None:
         visuals.molecule_figure(float("nan"))
 
 
+def test_circuit_summary_and_png_are_derived_from_real_circuit() -> None:
+    theta = Parameter("theta")
+    circuit = QuantumCircuit(2)
+    circuit.h(0)
+    circuit.cx(0, 1)
+    circuit.ry(theta, 1)
+
+    summary = visuals.circuit_summary(circuit)
+    assert summary["num_qubits"] == 2
+    assert summary["num_parameters"] == 1
+    assert summary["depth_as_built"] == 3
+    assert summary["size_as_built"] == 3
+
+    png = visuals.circuit_png(circuit, reps=2)
+    assert png.startswith(b"\x89PNG\r\n\x1a\n")
+    assert len(png) > 1000
+
+
