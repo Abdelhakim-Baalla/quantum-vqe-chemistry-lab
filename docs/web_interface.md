@@ -65,3 +65,58 @@ that no energies are available. After a run, every displayed energy, error,
 parameter, convergence point and check is read from the `ExperimentResult`
 returned by the scientific layer.
 
+## 3. Scientific boundary
+
+The call chain is:
+
+```text
+app.py (Streamlit widgets and rendering)
+   │
+   ▼
+webapp/logic.py
+   ├─ validates UI values
+   ├─ builds ExperimentConfig through the existing class
+   ├─ calls build_chemistry(config)
+   ├─ calls run_h2_experiment(config, chemistry=chemistry)
+   └─ stores the returned ExperimentResult and UI artifacts
+   │
+   ▼
+src/quantum_vqe/  (unchanged scientific implementation)
+```
+
+`run_h2_experiment` accepts an optional pre-built `ChemistryData` object. The UI
+uses that hook so the circuit it displays is the exact ansatz object passed to
+the VQE, not a separately reconstructed illustration. When the optional object
+is omitted, the CLI path builds chemistry itself exactly as before.
+
+`src/quantum_vqe/` does not import Streamlit. `webapp/logic.py` does not import
+Streamlit either; it is testable as ordinary Python. Streamlit-specific layout
+stays in `app.py`.
+
+## 4. Rendering and thread-safety
+
+Streamlit executes a script run in a script-run thread and may use a different
+thread for the next rerun. Qiskit's compiled extensions and circuit
+decomposition are not safely used across those threads in this environment:
+importing Qiskit during an initial render and then decomposing a circuit in a
+later rerun caused a segmentation fault during development.
+
+The interface therefore follows two rules:
+
+1. Qiskit-dependent operations happen in the run path, not in render helpers.
+2. All circuit artifacts are precomputed while the real result is being
+   produced and stored in the immutable `CircuitArtifacts` record:
+   - circuit summary and decomposition counts,
+   - parameter table,
+   - gate-count table,
+   - PNG diagrams for all three decomposition levels,
+   - text diagram.
+
+On reruns, the circuit tab displays those stored bytes and dataframes. It does
+not call Qiskit. This keeps normal Streamlit interactions such as changing a
+tab, selecting history, or downloading JSON stable.
+
+The convergence chart and molecule schematic are derived from real results or
+the selected configuration. The molecule drawing is explicitly labeled as an
+illustrative geometry, not an orbital or electron-density visualization.
+
