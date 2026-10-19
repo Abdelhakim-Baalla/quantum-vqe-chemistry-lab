@@ -71,3 +71,8 @@ def test_molecule_figure_is_labeled_geometry_not_an_orbital() -> None:
     assert "0.735 Å" in labels
 
 
+def test_molecule_figure_rejects_invalid_distance() -> None:
+    with pytest.raises(ValueError, match="positive finite"):
+        visuals.molecule_figure(float("nan"))
+
+
