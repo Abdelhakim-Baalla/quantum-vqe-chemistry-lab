@@ -347,3 +347,14 @@ def _render_hero() -> None:
     )
 
 
+def _render_error() -> None:
+    error = st.session_state.get("last_error")
+    if not error:
+        return
+    st.error(f"Experiment failed: {error}", icon="⚠️")
+    trace = st.session_state.get("last_traceback")
+    if trace:
+        with st.expander("Technical details"):
+            st.code(trace, language="text")
+
+
