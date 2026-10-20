@@ -110,3 +110,9 @@ h2, h3 {
 """
 
 
+def _format_energy(value: float | None, digits: int = 12) -> str:
+    if value is None:
+        return "n/a"
+    return f"{float(value):.{digits}f} Ha"
+
+
