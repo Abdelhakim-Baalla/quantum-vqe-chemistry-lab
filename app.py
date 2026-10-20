@@ -125,3 +125,18 @@ def _format_error(value: float | None) -> str:
     return f"{numeric:.6f} mHa"
 
 
+def _scientific_signature(values: logic.UIConfigInput) -> tuple[Any, ...]:
+    return (
+        values.molecule,
+        values.distance_angstrom,
+        values.basis,
+        values.ansatz,
+        values.mapping,
+        values.two_qubit_reduction,
+        values.optimizer,
+        values.max_iterations,
+        values.initial_point,
+        values.seed,
+    )
+
+
