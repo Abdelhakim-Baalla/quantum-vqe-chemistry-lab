@@ -358,3 +358,215 @@ def _render_error() -> None:
             st.code(trace, language="text")
 
 
+def _render_overview(run: logic.UIRun) -> None:
+    result = run.result
+    molecule = result.molecule
+    energies = result.energies_hartree
+    errors = result.errors_hartree
+
+    applicable_checks = [value for value in result.checks.values() if value is not None]
+    passed_checks = sum(value is True for value in applicable_checks)
+    if result.status == "success" and passed_checks == len(applicable_checks):
+        st.success(
+            f"Run completed successfully. {passed_checks}/{len(applicable_checks)} "
+            "scientific checks passed."
+        )
+    elif result.status == "success":
+        st.warning(
+            f"Run completed with {passed_checks}/{len(applicable_checks)} "
+            "scientific checks passing. Review the checks below."
+        )
+    else:
+        st.error(f"The result is marked {result.status!r}; do not treat it as valid evidence.")
+
+    st.caption(
+        f"Recorded {result.created_utc} · UI wall time {run.elapsed_s:.2f} s · "
+        f"optimizer wall time {result.optimization.get('wall_time_s', 'n/a')} s"
+    )
+
+    st.subheader("Molecular information")
+    left, right = st.columns([0.9, 1.1], gap="large")
+    with left:
+        fig = visuals.molecule_figure(molecule["bond_length_angstrom"])
+        st.pyplot(fig, clear_figure=True)
+        st.caption(
+            "Illustrative H-H geometry only. This is not an orbital, electron-density, "
+            "or quantum-state visualization."
+        )
+    with right:
+        info = pd.DataFrame(
+            [
+                {"Property": "Molecule", "Value": molecule["name"]},
+                {"Property": "Bond distance", "Value": f"{molecule['bond_length_angstrom']:.3f} Å"},
+                {"Property": "Basis set", "Value": molecule["basis"]},
+                {
+                    "Property": "Charge / spin",
+                    "Value": f"{molecule['charge']} / {molecule['spin']}",
+                },
+                {"Property": "Electrons", "Value": molecule["num_electrons"]},
+                {"Property": "Spatial orbitals", "Value": molecule["num_spatial_orbitals"]},
+                {"Property": "Spin orbitals", "Value": molecule["num_spin_orbitals"]},
+                {"Property": "Qubits after mapping", "Value": molecule["num_qubits"]},
+                {
+                    "Property": "Mapping",
+                    "Value": (
+                        f"{result.hamiltonian['mapping']} "
+                        f"(Z2 reduction: {result.hamiltonian['two_qubit_reduction']})"
+                    ),
+                },
+                {"Property": "Hamiltonian Pauli terms", "Value": result.hamiltonian["num_terms"]},
+                {
+                    "Property": "Nuclear repulsion",
+                    "Value": f"{energies['nuclear_repulsion']:.12f} Ha",
+                },
+            ]
+        )
+        info["Value"] = info["Value"].astype(str)
+        st.dataframe(info, hide_index=True, width="stretch")
+        st.caption(f"Geometry: `{molecule['geometry_angstrom']}`")
+
+    st.divider()
+    st.subheader("Energy results")
+    vqe_total = energies.get("vqe_total")
+    exact_total = energies.get("exact_qubit_total")
+    absolute_error = errors.get("absolute_vqe_vs_exact_total")
+    absolute_error_mha = logic.absolute_error_mha(result)
+
+    first_row = st.columns(4)
+    first_row[0].metric("VQE total energy", _format_energy(vqe_total), border=True)
+    first_row[1].metric("Exact total energy", _format_energy(exact_total), border=True)
+    first_row[2].metric(
+        "Absolute error (Ha)",
+        "n/a" if absolute_error is None else f"{absolute_error:.3e} Ha",
+        border=True,
+    )
+    first_row[3].metric(
+        "Absolute error (mHa)",
+        _format_error(absolute_error_mha),
+        border=True,
+    )
+
+    second_row = st.columns(4)
+    second_row[0].metric(
+        "VQE electronic", _format_energy(energies.get("vqe_electronic")), border=True
+    )
+    second_row[1].metric(
+        "Exact electronic", _format_energy(energies.get("exact_qubit_electronic")), border=True
+    )
+    second_row[2].metric(
+        "PySCF FCI total", _format_energy(energies.get("pyscf_fci_total")), border=True
+    )
+    second_row[3].metric(
+        "Hartree-Fock total", _format_energy(energies.get("hf_total")), border=True
+    )
+
+    third_row = st.columns(4)
+    initial_energy = result.optimization.get("initial_energy_hartree")
+    third_row[0].metric(
+        "Initial electronic energy",
+        _format_energy(initial_energy),
+        border=True,
+    )
+    third_row[1].metric(
+        "Energy evaluations",
+        str(result.optimization.get("energy_evaluations", "n/a")),
+        border=True,
+    )
+    third_row[2].metric(
+        "Optimizer converged",
+        "Yes" if result.optimization.get("converged") else "No",
+        border=True,
+    )
+    third_row[3].metric("UI wall time", f"{run.elapsed_s:.2f} s", border=True)
+
+    st.caption(
+        f"Nuclear repulsion is {energies['nuclear_repulsion']:.12f} Ha. "
+        "Electronic energies exclude it; total energies include it. "
+        "The exact reference is diagonalization of the same qubit Hamiltonian, "
+        "not the VQE result."
+    )
+
+    energy_table = pd.DataFrame(
+        [
+            {
+                "Quantity": "Hartree-Fock",
+                "Electronic (Ha)": energies.get("hf_electronic"),
+                "Total (Ha)": energies.get("hf_total"),
+            },
+            {
+                "Quantity": "VQE",
+                "Electronic (Ha)": energies.get("vqe_electronic"),
+                "Total (Ha)": energies.get("vqe_total"),
+            },
+            {
+                "Quantity": "Exact qubit diagonalization",
+                "Electronic (Ha)": energies.get("exact_qubit_electronic"),
+                "Total (Ha)": energies.get("exact_qubit_total"),
+            },
+            {
+                "Quantity": "PySCF FCI (independent)",
+                "Electronic (Ha)": energies.get("pyscf_fci_electronic"),
+                "Total (Ha)": energies.get("pyscf_fci_total"),
+            },
+        ]
+    )
+    st.dataframe(energy_table, hide_index=True, width="stretch")
+
+    st.subheader("Variational principle")
+    gap = errors.get("signed_variational_gap_electronic")
+    tolerance = result.check_tolerances_hartree.get("variational_tolerance")
+    check = result.checks.get("variational_principle")
+    if check is True:
+        st.success(
+            "The VQE energy is consistent with the variational principle for the "
+            "same Hamiltonian within the recorded numerical tolerance."
+        )
+    elif check is False:
+        st.error(
+            "The VQE energy falls below the exact reference by more than the recorded "
+            "numerical tolerance. Treat this run as numerically inconsistent."
+        )
+    else:
+        st.info("The variational-principle check was not applicable for this run.")
+    st.markdown(
+        "A valid VQE estimate is an expectation value of a normalized trial state. "
+        "For the same Hamiltonian it should not be materially below the exact "
+        "ground-state energy; a tiny negative gap can arise from floating-point "
+        "roundoff. The run records both the signed gap and the tolerance used by "
+        "the validation checks."
+    )
+    if gap is not None and tolerance is not None:
+        st.caption(
+            f"Signed electronic gap: {gap:.3e} Ha · variational tolerance: {tolerance:.3e} Ha."
+        )
+
+    with st.expander("Scientific checks"):
+        check_frame = pd.DataFrame(
+            [
+                {
+                    "Check": name,
+                    "Result": "not applicable" if value is None else ("pass" if value else "fail"),
+                }
+                for name, value in result.checks.items()
+            ]
+        )
+        st.dataframe(check_frame, hide_index=True, width="stretch")
+
+    with st.expander("Timing and run metadata"):
+        timing = pd.DataFrame(
+            [{"Stage": name, "Seconds": value} for name, value in result.timing_seconds.items()]
+        )
+        st.dataframe(timing, hide_index=True, width="stretch")
+        st.json(
+            {
+                "created_utc": result.created_utc,
+                "status": result.status,
+                "optimizer": result.optimizer,
+                "simulator": result.simulator,
+                "software": result.software,
+                "warnings": result.warnings,
+            },
+            expanded=False,
+        )
+
+
