@@ -324,3 +324,26 @@ def _handle_run(values: logic.UIConfigInput, run_clicked: bool) -> None:
     st.session_state["last_traceback"] = None
 
 
+def _render_hero() -> None:
+    st.markdown(
+        """
+        <div class="hero">
+            <div class="eyebrow">Local scientific workbench</div>
+            <h1>Quantum Lab</h1>
+            <p>
+                Configure, run, and inspect a real variational quantum eigensolver
+                experiment for molecular hydrogen. The dashboard calls the same
+                validated scientific layer as the command-line interface.
+            </p>
+            <div class="pill-row">
+                <span class="pill">H₂ / STO-3G</span>
+                <span class="pill">UCCSD</span>
+                <span class="pill">Exact statevector simulation</span>
+                <span class="pill">No cloud or hardware</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
