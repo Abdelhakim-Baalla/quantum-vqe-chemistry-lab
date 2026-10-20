@@ -116,3 +116,12 @@ def _format_energy(value: float | None, digits: int = 12) -> str:
     return f"{float(value):.{digits}f} Ha"
 
 
+def _format_error(value: float | None) -> str:
+    if value is None:
+        return "n/a"
+    numeric = float(value)
+    if abs(numeric) < 1e-3:
+        return f"{numeric:.3e} mHa"
+    return f"{numeric:.6f} mHa"
+
+
