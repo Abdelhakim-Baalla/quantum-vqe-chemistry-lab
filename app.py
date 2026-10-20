@@ -280,3 +280,47 @@ def _render_sidebar() -> tuple[logic.UIConfigInput, bool]:
     )
 
 
+def _handle_run(values: logic.UIConfigInput, run_clicked: bool) -> None:
+    if not run_clicked:
+        return
+
+    st.session_state["last_error"] = None
+    st.session_state["last_traceback"] = None
+    try:
+        config = logic.build_experiment_config(values)
+    except ImportError as exc:
+        st.session_state["last_error"] = (
+            "Scientific dependencies are missing. Install the project with "
+            f"`pip install -e '.[web]'` and restart Streamlit. Details: {exc}"
+        )
+        return
+    except Exception as exc:
+        st.session_state["last_error"] = f"{type(exc).__name__}: {exc}"
+        return
+
+    try:
+        with st.spinner(
+            "Running the VQE, exact diagonalization, and independent references. "
+            "No synthetic progress is reported because SciPy does not expose "
+            "per-iteration callbacks to this interface."
+        ):
+            run = logic.execute_experiment(config)
+    except ImportError as exc:
+        st.session_state["last_error"] = (
+            "Scientific dependencies are missing. Install the project with "
+            f"`pip install -e '.[web]'` and restart Streamlit. Details: {exc}"
+        )
+        return
+    except Exception as exc:  # include validation and scientific failures
+        st.session_state["last_error"] = f"{type(exc).__name__}: {exc}"
+        if not isinstance(exc, (ValueError, RuntimeError)):
+            st.session_state["last_traceback"] = traceback.format_exc()
+        return
+
+    st.session_state["run"] = run
+    st.session_state["last_input"] = values
+    st.session_state["history"].append(run)
+    st.session_state["last_error"] = None
+    st.session_state["last_traceback"] = None
+
+
