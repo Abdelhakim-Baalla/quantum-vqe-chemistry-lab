@@ -140,3 +140,143 @@ def _scientific_signature(values: logic.UIConfigInput) -> tuple[Any, ...]:
     )
 
 
+def _render_sidebar() -> tuple[logic.UIConfigInput, bool]:
+    with st.sidebar:
+        st.markdown("## Experiment configuration")
+        st.caption("H₂ / STO-3G · local exact-statevector simulation")
+
+        molecule = st.selectbox(
+            "Molecule",
+            logic.MOLECULES,
+            format_func=lambda value: "H₂" if value == "H2" else value,
+            key="cfg_molecule",
+            help="H₂ is the implemented and validated molecule for this project.",
+        )
+        distance = st.number_input(
+            "Bond distance (Å)",
+            min_value=0.30,
+            max_value=5.00,
+            value=0.735,
+            step=0.005,
+            format="%.3f",
+            key="cfg_distance",
+            help="Internuclear separation used to build the PySCF integrals.",
+        )
+        basis = st.selectbox(
+            "Basis set",
+            logic.BASES,
+            format_func=lambda value: "STO-3G",
+            key="cfg_basis",
+            help=(
+                "Only STO-3G is exposed because it is the basis covered by the "
+                "project's validation suite."
+            ),
+        )
+        ansatz = st.selectbox(
+            "Ansatz",
+            logic.ANSATZE,
+            key="cfg_ansatz",
+            help="UCCSD is the only implemented and validated ansatz.",
+        )
+        st.caption("Only validated basis/ansatz options are selectable.")
+
+        mapping = st.selectbox(
+            "Fermion-to-qubit mapping",
+            logic.MAPPINGS,
+            format_func=lambda value: (
+                "Parity + two-qubit Z2 reduction"
+                if value == "parity"
+                else "Jordan-Wigner (full four qubits)"
+            ),
+            key="cfg_mapping",
+            help=(
+                "Parity mapping can taper two qubits using the Hartree-Fock "
+                "particle-number and spin-parity sector. Jordan-Wigner does not "
+                "use that reduction here."
+            ),
+        )
+        reduction = st.checkbox(
+            "Two-qubit Z2 reduction",
+            value=True,
+            key="cfg_reduction",
+            disabled=mapping == "jordan-wigner",
+            help="Available only with parity mapping.",
+        )
+        reduction_effective = bool(reduction) if mapping == "parity" else False
+        if mapping == "jordan-wigner":
+            st.caption("Jordan-Wigner uses all four qubits; Z2 reduction is disabled.")
+
+        optimizer = st.selectbox(
+            "Classical optimizer",
+            logic.OPTIMIZERS,
+            key="cfg_optimizer",
+        )
+        max_iterations = st.number_input(
+            "Maximum optimization iterations",
+            min_value=1,
+            max_value=5000,
+            value=500,
+            step=50,
+            key="cfg_max_iterations",
+        )
+
+        with st.expander("Initial state and export", expanded=False):
+            initial_point = st.selectbox(
+                "Initial point",
+                logic.INITIAL_POINTS,
+                format_func=lambda value: (
+                    "Hartree-Fock reference" if value == "hf" else "Random (seeded)"
+                ),
+                key="cfg_initial_point",
+                help="The Hartree-Fock reference is the reproducible default.",
+            )
+            seed = st.number_input(
+                "Random seed",
+                min_value=0,
+                max_value=2_147_483_647,
+                value=7,
+                step=1,
+                key="cfg_seed",
+                help="Used when the initial point is random; recorded in the result.",
+            )
+            output_dir = st.text_input(
+                "Output directory (optional)",
+                value="results",
+                key="cfg_output_dir",
+                help=(
+                    "Directory used by the Save button in Experiment History. "
+                    "Relative paths are resolved from the directory where "
+                    "Streamlit was launched."
+                ),
+            )
+
+        st.divider()
+        run_clicked = st.button(
+            "Run VQE Experiment",
+            type="primary",
+            width="stretch",
+            key="run_experiment",
+        )
+        st.caption(
+            "Runs locally on the exact statevector simulator. No cloud account, "
+            "API key, or quantum hardware is used."
+        )
+
+    return (
+        logic.UIConfigInput(
+            molecule=molecule,
+            distance_angstrom=distance,
+            basis=basis,
+            ansatz=ansatz,
+            mapping=mapping,
+            two_qubit_reduction=reduction_effective,
+            optimizer=optimizer,
+            max_iterations=int(max_iterations),
+            initial_point=initial_point,
+            seed=int(seed),
+            output_dir=output_dir,
+        ),
+        run_clicked,
+    )
+
+
