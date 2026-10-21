@@ -686,3 +686,85 @@ def _render_convergence(run: logic.UIRun) -> None:
     st.dataframe(display, hide_index=True, width="stretch")
 
 
+def _render_history(values: logic.UIConfigInput) -> None:
+    entries: list[logic.UIRun] = st.session_state["history"]
+    st.subheader("Experiment history")
+    st.caption(
+        "Completed runs from this session. Nothing is written to disk until you "
+        "press Save; no database is used."
+    )
+    if not entries:
+        st.info("No completed experiments in this session yet.")
+        return
+
+    frame = logic.history_frame(entries)
+    display = frame.rename(
+        columns={
+            "run": "Run",
+            "timestamp_utc": "Timestamp (UTC)",
+            "distance_A": "d (Å)",
+            "basis": "Basis",
+            "mapping": "Mapping",
+            "optimizer": "Optimizer",
+            "vqe_total_Ha": "VQE total (Ha)",
+            "exact_total_Ha": "Exact total (Ha)",
+            "abs_error_Ha": "|Error| (Ha)",
+            "abs_error_mHa": "|Error| (mHa)",
+            "converged": "Converged",
+            "status": "Status",
+            "elapsed_s": "UI time (s)",
+        }
+    )
+    st.dataframe(display, hide_index=True, width="stretch")
+
+    labels = logic.history_labels(entries)
+    selected_index = st.selectbox(
+        "Select a run to export",
+        options=list(range(len(entries))),
+        format_func=lambda index: labels[index],
+        key="history_selection",
+    )
+    selected = entries[selected_index]
+
+    save_col, selected_col, all_col = st.columns(3)
+    with save_col:
+        if st.button("Save selected result as JSON", width="stretch", key="save_selected_result"):
+            try:
+                path = logic.save_result(selected.result, values.output_dir)
+            except Exception as exc:
+                st.error(f"Could not save result: {type(exc).__name__}: {exc}")
+            else:
+                st.success(f"Saved result to `{path}`")
+    with selected_col:
+        st.download_button(
+            "Download selected (JSON)",
+            data=selected.result.to_json(),
+            file_name=logic.result_filename(selected.result),
+            mime="application/json",
+            width="stretch",
+            key="download_selected_json",
+        )
+    with all_col:
+        st.download_button(
+            "Download history (JSON)",
+            data=logic.history_json(entries),
+            file_name="quantum_lab_history.json",
+            mime="application/json",
+            width="stretch",
+            key="download_history_json",
+        )
+
+    st.download_button(
+        "Download comparison table (CSV)",
+        data=logic.history_csv(entries),
+        file_name="quantum_lab_history.csv",
+        mime="text/csv",
+        key="download_history_csv",
+    )
+    st.caption(
+        "JSON exports preserve the complete ExperimentResult schema: configuration, "
+        "molecule, Hamiltonian, ansatz, energies, errors, checks, optimizer history, "
+        "timing, software versions, and artifacts."
+    )
+
+
