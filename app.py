@@ -632,3 +632,57 @@ def _render_circuit(run: logic.UIRun) -> None:
         st.code(artifacts.text_diagram, language="text")
 
 
+def _render_convergence(run: logic.UIRun) -> None:
+    result = run.result
+    st.subheader("Convergence history")
+    st.caption(
+        "Every marker is a recorded cost-function evaluation. The best-so-far "
+        "trace is a cumulative minimum of those same values. No smoothing, "
+        "interpolation, or synthetic points are added."
+    )
+
+    try:
+        frame = visuals.convergence_frame(result)
+        chart = visuals.convergence_chart(result)
+    except Exception as exc:
+        st.error(f"Could not build the convergence view: {type(exc).__name__}: {exc}")
+        return
+
+    st.altair_chart(chart, width="stretch")
+
+    energies = result.energies_hartree
+    metrics = st.columns(3)
+    metrics[0].metric("Evaluations", len(frame), border=True)
+    metrics[1].metric(
+        "First recorded energy",
+        _format_energy(result.optimization.get("initial_energy_hartree")),
+        border=True,
+    )
+    metrics[2].metric(
+        "Best recorded energy",
+        _format_energy(float(frame["best_so_far_hartree"].min())),
+        border=True,
+    )
+    metrics = st.columns(3)
+    metrics[0].metric(
+        "Exact electronic", _format_energy(energies.get("exact_qubit_electronic")), border=True
+    )
+    metrics[1].metric(
+        "Hartree-Fock electronic", _format_energy(energies.get("hf_electronic")), border=True
+    )
+    metrics[2].metric(
+        "Final optimization energy",
+        _format_energy(result.optimization.get("final_energy_hartree")),
+        border=True,
+    )
+
+    display = frame.rename(
+        columns={
+            "evaluation": "Evaluation",
+            "energy_hartree": "Electronic energy (Ha)",
+            "best_so_far_hartree": "Best so far (Ha)",
+        }
+    )
+    st.dataframe(display, hide_index=True, width="stretch")
+
+
