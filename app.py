@@ -570,3 +570,65 @@ def _render_overview(run: logic.UIRun) -> None:
         )
 
 
+def _render_circuit(run: logic.UIRun) -> None:
+    artifacts = run.circuit
+    st.subheader("Quantum circuit explorer")
+    st.caption(
+        "These diagrams were generated during the run from the exact "
+        "`ChemistryData.ansatz` object passed into the VQE. They are not a "
+        "separate decorative circuit."
+    )
+    if artifacts is None:
+        st.warning(
+            "The scientific result is available, but the circuit artifacts could "
+            "not be generated for this run."
+        )
+        if run.circuit_error:
+            st.code(run.circuit_error, language="text")
+        return
+
+    summary = artifacts.summary
+    metrics = st.columns(4)
+    metrics[0].metric("Qubits", summary["num_qubits"], border=True)
+    metrics[1].metric("Parameters", summary["num_parameters"], border=True)
+    metrics[2].metric("Depth (basis gates)", summary["depth_decomposed"], border=True)
+    metrics[3].metric("Gates (basis)", summary["size_decomposed"], border=True)
+
+    decomposed_tab, pauli_tab, as_built_tab, parameters_tab = st.tabs(
+        ["Basis-gate decomposition", "Pauli evolution", "As built", "Parameters"]
+    )
+    with decomposed_tab:
+        st.image(artifacts.diagram_basis_png, width="stretch")
+        st.caption(
+            "Two decomposition levels from the executed ansatz. Decomposition "
+            "preserves the unitary; it only exposes the underlying gates."
+        )
+    with pauli_tab:
+        st.image(artifacts.diagram_pauli_png, width="stretch")
+        st.caption(
+            "One decomposition level: the UCCSD evolution block expanded into "
+            "Pauli-evolution gates."
+        )
+    with as_built_tab:
+        st.image(artifacts.diagram_as_built_png, width="stretch")
+        st.caption(
+            "The ansatz exactly as constructed. The single UCCSD evolution block "
+            "is compact by design."
+        )
+    with parameters_tab:
+        st.dataframe(
+            artifacts.parameter_frame,
+            hide_index=True,
+            width="stretch",
+        )
+        st.caption(
+            "Initial and optimized parameter values come from the recorded "
+            "optimizer vectors and are mapped back to the circuit parameters."
+        )
+
+    with st.expander("Circuit summary and gate counts"):
+        st.dataframe(artifacts.summary_frame, hide_index=True, width="stretch")
+        st.dataframe(artifacts.gate_counts_frame, hide_index=True, width="stretch")
+        st.code(artifacts.text_diagram, language="text")
+
+
