@@ -847,3 +847,99 @@ def _render_learn(run: logic.UIRun | None) -> None:
         )
 
 
+def main() -> None:
+    st.markdown(_CSS, unsafe_allow_html=True)
+    for key, default in (
+        ("history", []),
+        ("run", None),
+        ("last_error", None),
+        ("last_traceback", None),
+        ("last_input", None),
+    ):
+        if key not in st.session_state:
+            st.session_state[key] = default
+
+    values, run_clicked = _render_sidebar()
+    _handle_run(values, run_clicked)
+
+    _render_hero()
+    _render_error()
+
+    run: logic.UIRun | None = st.session_state.get("run")
+    last_input: logic.UIConfigInput | None = st.session_state.get("last_input")
+    if (
+        run is not None
+        and last_input is not None
+        and _scientific_signature(values) != _scientific_signature(last_input)
+    ):
+        st.warning(
+            "The sidebar settings have changed since the displayed run. "
+            "The result panels still show the recorded configuration; run again "
+            "to evaluate the new settings."
+        )
+
+    tabs = st.tabs(["Experiment", "Quantum circuit", "Convergence", "History", "Learn"])
+
+    with tabs[0]:
+        if run is None:
+            st.subheader("Molecular model")
+            left, right = st.columns([0.9, 1.1], gap="large")
+            with left:
+                st.pyplot(visuals.molecule_figure(values.distance_angstrom), clear_figure=True)
+                st.caption(
+                    "Illustrative H-H geometry only. This is not an orbital, "
+                    "electron-density, or quantum-state visualization."
+                )
+            with right:
+                st.markdown("**Configuration preview**")
+                preview = pd.DataFrame(
+                    [
+                        {"Setting": "Molecule", "Value": "H₂ (H2)"},
+                        {"Setting": "Bond distance", "Value": f"{values.distance_angstrom:.3f} Å"},
+                        {"Setting": "Basis set", "Value": "STO-3G"},
+                        {"Setting": "Ansatz", "Value": "UCCSD"},
+                        {"Setting": "Mapping", "Value": values.mapping},
+                        {"Setting": "Optimizer", "Value": values.optimizer},
+                        {"Setting": "Maximum iterations", "Value": str(values.max_iterations)},
+                    ]
+                )
+                st.dataframe(preview, hide_index=True, width="stretch")
+                st.info(
+                    "No energies are displayed yet. Hamiltonian data, qubit counts, "
+                    "and results appear only after a real experiment completes."
+                )
+            st.subheader("Energy results")
+            st.info(
+                "Select **Run VQE Experiment** in the sidebar to build the Hamiltonian "
+                "and run the variational loop. No placeholder energies are shown."
+            )
+        else:
+            _render_overview(run)
+
+    with tabs[1]:
+        if run is None:
+            st.info("Run an experiment to render the actual ansatz circuit used by the VQE.")
+        else:
+            _render_circuit(run)
+
+    with tabs[2]:
+        if run is None:
+            st.info("Run an experiment to view the recorded convergence history.")
+        else:
+            _render_convergence(run)
+
+    with tabs[3]:
+        _render_history(values)
+
+    with tabs[4]:
+        _render_learn(run)
+
+    st.divider()
+    st.caption(
+        "Quantum Lab · Streamlit interface over the existing quantum_vqe scientific "
+        "layer · local statevector simulation · no deployment or hardware execution."
+    )
+
+
+if __name__ == "__main__":
+    main()
