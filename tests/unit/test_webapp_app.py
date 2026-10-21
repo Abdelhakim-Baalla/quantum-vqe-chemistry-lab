@@ -94,3 +94,20 @@ def test_app_displays_values_from_a_real_result(
     assert app.session_state["run"].result is official_result
 
 
+def test_app_reports_execution_failure_without_adding_history(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail(config):  # noqa: ANN001
+        raise RuntimeError("simulated optimizer failure")
+
+    monkeypatch.setattr(logic, "execute_experiment", fail)
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    app.sidebar.button(key="run_experiment").click()
+    app.run(timeout=60)
+
+    assert not app.exception
+    assert any("simulated optimizer failure" in error.value for error in app.error)
+    assert app.session_state.get("run") is None
+    assert len(app.session_state["history"]) == 0
+
+
