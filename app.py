@@ -768,3 +768,82 @@ def _render_history(values: logic.UIConfigInput) -> None:
     )
 
 
+def _render_learn(run: logic.UIRun | None) -> None:
+    st.subheader("Learning mode")
+    st.caption(
+        "Short explanations tied to what this dashboard actually computes. "
+        "The simulation is classical and local."
+    )
+
+    if run is not None:
+        result = run.result
+        st.info(
+            f"Concrete values from the current run: {result.hamiltonian['num_qubits']} "
+            f"qubits, {result.hamiltonian['num_terms']} Pauli terms, mapping "
+            f"`{result.hamiltonian['mapping']}`, and "
+            f"{result.ansatz['num_parameters']} variational parameters."
+        )
+
+    with st.expander("What is a qubit?", expanded=True):
+        st.markdown(
+            "A qubit is a two-level quantum system. In this project, qubits are "
+            "mathematical objects in an exact classical simulation. After the "
+            "fermionic Hamiltonian is mapped, each qubit represents a two-level "
+            "degree of freedom; it is not a physical device here."
+        )
+    with st.expander("What is a molecular Hamiltonian?"):
+        st.markdown(
+            "The molecular Hamiltonian is a Hermitian operator whose eigenvalues "
+            "are possible energies. This project builds the electronic Hamiltonian "
+            "from PySCF integrals and handles the nuclear-repulsion constant "
+            "separately, so electronic and total energies are never mixed."
+        )
+    with st.expander("How does fermionic-to-qubit mapping work?"):
+        st.markdown(
+            "Electronic creation and annihilation operators obey fermionic "
+            "anticommutation rules. A mapping rewrites them as Pauli operators on "
+            "qubits. This project supports parity and Jordan-Wigner mappings; "
+            "parity mapping can additionally taper two qubits by fixing the "
+            "Hartree-Fock particle-number and spin-parity sector."
+        )
+    with st.expander("How does a parameterized circuit produce an energy?"):
+        st.markdown(
+            "The UCCSD ansatz prepares a Hartree-Fock reference and applies "
+            "parameterized excitation operators. For a choice of angles, the "
+            "circuit prepares a trial state. The simulator computes the expectation "
+            "value of the qubit Hamiltonian in that state, which is the energy "
+            "estimate for those angles."
+        )
+    with st.expander("Why is a classical optimizer needed?"):
+        st.markdown(
+            "The circuit's energy depends on continuous variational parameters. "
+            "A classical SciPy optimizer proposes new parameter values and uses the "
+            "recorded energy evaluations to reduce the expectation value. VQE is a "
+            "hybrid loop: quantum-state simulation for energies, classical "
+            "optimization for the angles."
+        )
+    with st.expander("How is VQE different from exact diagonalization?"):
+        st.markdown(
+            "Exact diagonalization computes eigenvalues of the same qubit "
+            "Hamiltonian directly. It is an independent reference, not the VQE "
+            "result. VQE searches a restricted, parameterized family of states and "
+            "may be approximate. The dashboard reports the absolute difference so "
+            "agreement can be judged quantitatively, rather than assumed."
+        )
+    with st.expander("Why does simulation not mean quantum hardware?"):
+        st.markdown(
+            "The estimator used here is `StatevectorEstimator`, which evolves an "
+            "exact statevector on the CPU. There is no quantum processor, no "
+            "measurement shot noise, and no hardware error model. These results are "
+            "simulation results and do not demonstrate a hardware advantage."
+        )
+    with st.expander("What does the variational principle imply?"):
+        st.markdown(
+            "For a normalized trial state and the same Hamiltonian, the energy "
+            "expectation value cannot be below the exact ground-state energy, apart "
+            "from numerical roundoff. This project records the signed gap and a "
+            "tolerance and treats a materially negative gap as a failed consistency "
+            "check."
+        )
+
+
