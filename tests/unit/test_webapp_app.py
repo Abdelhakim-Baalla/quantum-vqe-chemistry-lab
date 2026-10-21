@@ -32,3 +32,21 @@ def _run_without_circuit(result: ExperimentResult) -> logic.UIRun:
     )
 
 
+def test_app_starts_and_shows_no_fake_energy_values() -> None:
+    app = AppTest.from_file(APP, default_timeout=60).run()
+
+    assert not app.exception
+    assert not app.error
+    assert any("Quantum Lab" in markdown.value for markdown in app.markdown)
+    assert app.sidebar.button(key="run_experiment").label == "Run VQE Experiment"
+    assert [tab.label for tab in app.tabs] == [
+        "Experiment",
+        "Quantum circuit",
+        "Convergence",
+        "History",
+        "Learn",
+    ]
+    assert len(app.metric) == 0
+    assert any("No energies are displayed yet" in info.value for info in app.info)
+
+
