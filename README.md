@@ -13,6 +13,62 @@ or quantum hardware is required. A local Streamlit dashboard, **Quantum Lab**,
 exposes the same validated scientific layer for interactive configuration,
 real circuit inspection, convergence analysis and JSON export.
 
+## Quick start
+
+The project targets Python 3.11 and 3.12. The tested environment is Python
+3.12.14. Create an isolated environment:
+
+```bash
+cd quantum-vqe-chemistry-lab
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install -e ".[dev,web]"
+```
+
+With plain `pip`, the equivalent is:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev,web]"
+```
+
+The `dev` extra provides the test and lint tools. The `web` extra provides
+Streamlit, pandas, Altair and `pylatexenc` for the local dashboard and its
+circuit renderer. A CLI-only environment can use `.[dev]` instead.
+
+Run the experiment:
+
+```bash
+python -m quantum_vqe run-h2 --distance 0.735 --basis sto3g --plot
+```
+
+The console prints the configuration, Hamiltonian and ansatz information,
+Hartree-Fock and VQE energies, exact and PySCF FCI references, the absolute
+error, optimizer convergence status, evaluation counts and wall-clock time. A
+timestamped JSON file is written under `results/`, and `--plot` adds a PNG
+convergence plot next to it.
+
+Useful variants:
+
+```bash
+# Explicit output path and plot
+python -m quantum_vqe run-h2 --json results/h2_0735.json --plot
+
+# Jordan-Wigner mapping, no parity reduction (4 qubits instead of 2)
+python -m quantum_vqe run-h2 --mapping jordan-wigner
+
+# A different optimizer and a seeded random starting point
+python -m quantum_vqe run-h2 --optimizer BFGS --tolerance 1e-6 --init random --seed 11
+```
+
+The installed entry point is equivalent to the module invocation:
+
+```bash
+quantum-vqe run-h2 --distance 0.735
+```
+
 ## Quantum Lab web interface
 
 Launch the local dashboard from the repository root:
@@ -391,4 +447,39 @@ quantum-vqe-chemistry-lab/
 ├── docs/                # methodology, architecture, web interface and experiment report
 └── .github/workflows/   # CI
 ```
+
+## What this demonstrates — and what it does not
+
+**Demonstrated**
+
+- A real molecular Hamiltonian generated from PySCF integrals through Qiskit
+  Nature, with no hard-coded energies.
+- A documented fermion-to-qubit mapping and a justified two-qubit symmetry
+  reduction.
+- A chemically motivated UCCSD circuit with a Hartree-Fock reference.
+- A complete VQE optimization with recorded convergence and parameters.
+- Independent validation against exact diagonalization, full Jordan-Wigner and
+  PySCF FCI, including the variational principle and total-energy bookkeeping.
+- A local Streamlit dashboard that exposes the same implementation for
+  interactive runs, actual circuit inspection, convergence analysis and JSON
+  export.
+- Reproducible JSON, convergence plots, tests, CI and version metadata.
+
+**Not demonstrated**
+
+- Quantum advantage. The simulator is classical and exact; a classical
+  diagonalization of this 2-qubit Hamiltonian is trivial.
+- Hardware performance, shot noise, gate errors, decoherence or error
+  mitigation.
+- Predictive chemistry beyond the STO-3G minimal basis. H₂/STO-3G is a
+  validation problem, not a benchmark against experiment.
+- General molecular scaling. Larger active spaces, frozen cores, relativistic
+  effects, excited states and real hardware need substantially more machinery.
+- Global optimality of VQE on non-trivial Hamiltonians. The optimizer is local
+  and the ansatz is fixed.
+- Public deployment, multi-user authentication or remote access for the
+  Streamlit dashboard. It is a local scientific interface, not a hosted
+  service.
+- QAOA Max-Cut or any second quantum algorithm. QAOA is documented as future
+  work in [`docs/roadmap.md`](docs/roadmap.md), not implemented here.
 
