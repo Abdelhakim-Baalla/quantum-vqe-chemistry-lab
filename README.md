@@ -517,3 +517,6 @@ quantum-vqe-chemistry-lab/
   Qiskit Nature API docs:
   <https://qiskit-community.github.io/qiskit-nature/apidocs/qiskit_nature.second_q.mappers.html>
 
+## License
+
+MIT. See [`LICENSE`](LICENSE).
