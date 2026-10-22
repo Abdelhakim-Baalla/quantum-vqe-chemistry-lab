@@ -495,3 +495,25 @@ quantum-vqe-chemistry-lab/
   launch, UI architecture, test strategy and limitations.
 - [`docs/roadmap.md`](docs/roadmap.md): extensions, including QAOA Max-Cut.
 
+## Scientific references
+
+- Peruzzo et al., “A variational eigenvalue solver on a photonic quantum
+  processor,” *Nature Communications* 5, 4213 (2014).
+  <https://doi.org/10.1038/ncomms5213>
+- McArdle et al., “Quantum computational chemistry,” *Reviews of Modern
+  Physics* 92, 015003 (2020). <https://doi.org/10.1103/RevModPhys.92.015003>
+- Grimsley et al., “An adaptive variational algorithm for exact molecular
+  simulations,” *Nature Communications* 10, 3007 (2019).
+  <https://doi.org/10.1038/s41467-019-10988-2>
+- Qiskit Nature documentation and getting started:
+  <https://qiskit-community.github.io/qiskit-nature/getting_started.html>
+- IBM Quantum learning, VQE:
+  <https://qiskit.qotlabs.org/learning/courses/quantum-diagonalization-algorithms/vqe>
+- IBM Quantum learning, quantum chemistry with VQE:
+  <https://qiskit.qotlabs.org/learning/courses/quantum-chem-with-vqe/index>
+- Qiskit documentation: <https://quantum.cloud.ibm.com/docs/>
+- PySCF documentation: <https://pyscf.org/>
+- OpenFermion and Qiskit Nature mapping conventions are described in the
+  Qiskit Nature API docs:
+  <https://qiskit-community.github.io/qiskit-nature/apidocs/qiskit_nature.second_q.mappers.html>
+
