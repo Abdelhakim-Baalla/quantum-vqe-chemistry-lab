@@ -111,3 +111,18 @@ def test_app_reports_execution_failure_without_adding_history(
     assert len(app.session_state["history"]) == 0
 
 
+def test_app_reports_missing_dependency_with_actionable_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def missing(config):  # noqa: ANN001
+        raise ImportError("No module named 'qiskit'")
+
+    monkeypatch.setattr(logic, "execute_experiment", missing)
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    app.sidebar.button(key="run_experiment").click()
+    app.run(timeout=60)
+
+    assert any("Scientific dependencies are missing" in error.value for error in app.error)
+    assert any("pip install -e" in error.value for error in app.error)
+
+
