@@ -483,3 +483,15 @@ quantum-vqe-chemistry-lab/
 - QAOA Max-Cut or any second quantum algorithm. QAOA is documented as future
   work in [`docs/roadmap.md`](docs/roadmap.md), not implemented here.
 
+## Documentation
+
+- [`docs/methodology.md`](docs/methodology.md): equations, mapping details,
+  UCCSD, optimizer choices, exact references, tolerances and limitations.
+- [`docs/experiment_report.md`](docs/experiment_report.md): the measured run,
+  environment, commands, results, checks and interpretation.
+- [`docs/architecture.md`](docs/architecture.md): module boundaries and data
+  flow, including the web layer.
+- [`docs/web_interface.md`](docs/web_interface.md): dashboard controls, local
+  launch, UI architecture, test strategy and limitations.
+- [`docs/roadmap.md`](docs/roadmap.md): extensions, including QAOA Max-Cut.
+
