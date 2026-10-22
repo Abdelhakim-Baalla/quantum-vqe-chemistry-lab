@@ -126,3 +126,24 @@ def test_app_reports_missing_dependency_with_actionable_message(
     assert any("pip install -e" in error.value for error in app.error)
 
 
+def test_app_saves_selected_result_as_json(
+    monkeypatch: pytest.MonkeyPatch,
+    official_result: ExperimentResult,
+    tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        logic,
+        "execute_experiment",
+        lambda config: _run_without_circuit(official_result),
+    )
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    app.sidebar.text_input(key="cfg_output_dir").set_value(str(tmp_path))
+    app.run(timeout=60)
+    app.sidebar.button(key="run_experiment").click()
+    app.run(timeout=60)
+    app.button(key="save_selected_result").click()
+    app.run(timeout=60)
+
+    files = sorted(tmp_path.glob("*.json"))
+    assert len(files) == 1
+    assert ExperimentResult.load(files[0]).to_dict() == official_result.to_dict()
