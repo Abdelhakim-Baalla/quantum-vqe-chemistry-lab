@@ -25,25 +25,35 @@ if TYPE_CHECKING:
 
     from quantum_vqe.results import ExperimentResult
 
+_INK = "#161616"
+_BODY = "#393939"
+_MUTED = "#6f6f6f"
+_BORDER = "#d9d9d9"
+_GRID = "#e8e8e8"
+_BLUE = "#0f62fe"
+_RED = "#da1e28"
+_AMBER = "#8e6a00"
+_GRAY = "#8d8d8d"
+_SURFACE = "#ffffff"
+
 _CIRCUIT_STYLE = {
-    "name": "iqp-dark",
-    "backgroundcolor": "#0b1120",
-    "textcolor": "#e5e7eb",
-    "gatetextcolor": "#e5e7eb",
-    "subtextcolor": "#cbd5e1",
-    "linecolor": "#94a3b8",
-    "gatefacecolor": "#1e293b",
-    "gateedgecolor": "#38bdf8",
-    "barrierfacecolor": "#334155",
+    "backgroundcolor": _SURFACE,
+    "textcolor": _INK,
+    "gatetextcolor": _INK,
+    "subtextcolor": _MUTED,
+    "linecolor": _GRAY,
+    "gatefacecolor": _BLUE,
+    "gateedgecolor": _BLUE,
+    "barrierfacecolor": "#c6c6c6",
     "displaycolor": {
-        "x": ["#38bdf8", "#0b1120"],
-        "h": ["#2dd4bf", "#0b1120"],
-        "cx": ["#38bdf8", "#0b1120"],
-        "ry": ["#a78bfa", "#0b1120"],
-        "rz": ["#a78bfa", "#0b1120"],
-        "u": ["#a78bfa", "#0b1120"],
-        "sx": ["#38bdf8", "#0b1120"],
-        "sxdg": ["#38bdf8", "#0b1120"],
+        "x": [_BLUE, "#ffffff"],
+        "h": [_INK, "#ffffff"],
+        "cx": [_BLUE, "#ffffff"],
+        "ry": ["#edf5ff", _INK],
+        "rz": ["#edf5ff", _INK],
+        "u": ["#edf5ff", _INK],
+        "sx": [_BLUE, "#ffffff"],
+        "sxdg": [_BLUE, "#ffffff"],
     },
 }
 
@@ -100,7 +110,7 @@ def convergence_chart(result: ExperimentResult) -> alt.Chart:
                 "trace:N",
                 scale=alt.Scale(
                     domain=["Recorded evaluation", "Best so far"],
-                    range=["#64748b", "#38bdf8"],
+                    range=[_GRAY, _BLUE],
                 ),
                 legend=alt.Legend(title=None, orient="top"),
             ),
@@ -127,7 +137,7 @@ def convergence_chart(result: ExperimentResult) -> alt.Chart:
                 "reference:N",
                 scale=alt.Scale(
                     domain=["Exact diagonalization", "Hartree-Fock"],
-                    range=["#f87171", "#fbbf24"],
+                    range=[_RED, _AMBER],
                 ),
                 legend=alt.Legend(title=None, orient="bottom"),
             ),
@@ -144,14 +154,25 @@ def convergence_chart(result: ExperimentResult) -> alt.Chart:
         .properties(height=420, title="Energy during optimization")
         .configure(background="transparent")
         .configure_axis(
-            labelColor="#cbd5e1",
-            titleColor="#e5e7eb",
-            gridColor="#1f2937",
-            domainColor="#475569",
-            tickColor="#475569",
+            labelColor=_MUTED,
+            titleColor=_INK,
+            gridColor=_GRID,
+            domainColor=_BORDER,
+            tickColor=_BORDER,
+            labelFont="Noto Sans",
+            titleFont="Noto Sans",
+            labelFontSize=11,
+            titleFontSize=12,
+            titleFontWeight=500,
         )
-        .configure_title(color="#e2e8f0", fontSize=16, anchor="start")
-        .configure_legend(labelColor="#cbd5e1", titleColor="#e5e7eb")
+        .configure_title(color=_INK, fontSize=16, font="Noto Sans", fontWeight=500, anchor="start")
+        .configure_legend(
+            labelColor=_BODY,
+            titleColor=_INK,
+            labelFont="Noto Sans",
+            titleFont="Noto Sans",
+            labelFontSize=11,
+        )
         .configure_view(strokeWidth=0)
     )
 
@@ -163,17 +184,17 @@ def molecule_figure(distance_angstrom: float) -> plt.Figure:
         raise ValueError("distance_angstrom must be a positive finite number")
 
     radius = 0.20
-    fig, ax = plt.subplots(figsize=(5.4, 2.4), dpi=150)
-    fig.patch.set_facecolor("#0b1120")
-    ax.set_facecolor("#0b1120")
+    fig, ax = plt.subplots(figsize=(5.4, 2.4), dpi=180)
+    fig.patch.set_facecolor(_SURFACE)
+    ax.set_facecolor(_SURFACE)
 
     left = -distance / 2.0
     right = distance / 2.0
     ax.plot(
         [left, right],
         [0.0, 0.0],
-        color="#475569",
-        linewidth=5,
+        color=_GRAY,
+        linewidth=4,
         solid_capstyle="round",
         zorder=1,
     )
@@ -182,9 +203,9 @@ def molecule_figure(distance_angstrom: float) -> plt.Figure:
             Circle(
                 (x_position, 0.0),
                 radius,
-                facecolor="#0ea5e9",
-                edgecolor="#7dd3fc",
-                linewidth=1.5,
+                facecolor=_BLUE,
+                edgecolor=_BLUE,
+                linewidth=1.0,
                 zorder=2,
             )
         )
@@ -194,7 +215,7 @@ def molecule_figure(distance_angstrom: float) -> plt.Figure:
             "H",
             ha="center",
             va="center",
-            color="#f8fafc",
+            color="#ffffff",
             fontsize=16,
             fontweight="bold",
             zorder=3,
@@ -206,7 +227,7 @@ def molecule_figure(distance_angstrom: float) -> plt.Figure:
         f"{distance:.3f} Å",
         ha="center",
         va="center",
-        color="#cbd5e1",
+        color=_MUTED,
         fontsize=11,
     )
     x_span = max(distance / 2.0 + 0.75, 1.15)
@@ -255,21 +276,21 @@ def circuit_figure(circuit: QuantumCircuit, *, reps: int = 2) -> plt.Figure:
     except Exception:
         # The text drawer is a robust fallback and still shows the real gates.
         fig, axis = plt.subplots(figsize=(10.0, 2.6), dpi=150)
-        fig.patch.set_facecolor("#0b1120")
-        axis.set_facecolor("#0b1120")
+        fig.patch.set_facecolor(_SURFACE)
+        axis.set_facecolor(_SURFACE)
         axis.text(
             0.0,
             1.0,
             str(display_circuit.draw("text")),
             family="monospace",
-            color="#e5e7eb",
+            color=_INK,
             fontsize=8,
             va="top",
             ha="left",
             transform=axis.transAxes,
         )
         axis.axis("off")
-    fig.patch.set_facecolor("#0b1120")
+    fig.patch.set_facecolor(_SURFACE)
     return fig
 
 

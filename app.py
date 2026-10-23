@@ -29,82 +29,321 @@ except Exception as exc:  # pragma: no cover - exercised only with missing depen
 _CSS = """
 <style>
 :root {
-    --lab-border: #1f2937;
-    --lab-panel: #0f172a;
-    --lab-muted: #94a3b8;
+    --lab-bg: #f7f7f5;
+    --lab-surface: #ffffff;
+    --lab-ink: #161616;
+    --lab-body: #393939;
+    --lab-muted: #6f6f6f;
+    --lab-subtle: #8d8d8d;
+    --lab-border: #d9d9d9;
+    --lab-border-strong: #bdbdbd;
+    --lab-accent: #0f62fe;
+    --lab-accent-soft: #edf5ff;
+    --lab-success: #198038;
+    --lab-danger: #da1e28;
+    --lab-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --lab-sans: "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+}
+html, body, [class*="css"] {
+    font-family: var(--lab-sans);
+    color: var(--lab-ink);
+}
+.stApp {
+    background: var(--lab-bg);
+}
+[data-testid="stHeader"] {
+    background: transparent;
+}
+[data-testid="stToolbar"],
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"],
+#MainMenu,
+footer {
+    display: none !important;
 }
 .block-container {
-    padding-top: 1.6rem;
-    padding-bottom: 3rem;
-    max-width: 1500px;
+    padding-top: 1.9rem;
+    padding-bottom: 3.5rem;
+    max-width: 1380px;
 }
 [data-testid="stSidebar"] {
+    background: var(--lab-surface);
     border-right: 1px solid var(--lab-border);
 }
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 1.25rem;
+}
+[data-testid="stSidebar"] .block-container {
+    padding-top: 0;
+}
+[data-testid="stSidebar"] h2 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.15rem;
+}
+[data-testid="stSidebar"] hr {
+    border-color: var(--lab-border);
+    margin: 1.2rem 0;
+}
+.sidebar-kicker {
+    color: var(--lab-accent);
+    font-family: var(--lab-mono);
+    font-size: 0.63rem;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    margin-bottom: 0.42rem;
+}
 .hero {
-    border: 1px solid var(--lab-border);
-    border-radius: 18px;
-    padding: 1.55rem 1.7rem 1.4rem 1.7rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.72fr);
+    gap: 2.8rem;
+    border-top: 1px solid var(--lab-border-strong);
+    border-bottom: 1px solid var(--lab-border);
+    padding: 2.35rem 0 2.15rem;
     margin-bottom: 1.15rem;
-    background:
-        radial-gradient(circle at 90% 10%, rgba(56, 189, 248, 0.13), transparent 38%),
-        linear-gradient(135deg, #0f172a 0%, #0b1120 70%);
+    background: transparent;
 }
 .eyebrow {
-    color: #38bdf8;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
+    color: var(--lab-accent);
+    font-family: var(--lab-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.13em;
     text-transform: uppercase;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.75rem;
 }
 .hero h1 {
-    color: #f8fafc;
-    font-size: clamp(2.2rem, 4vw, 3.4rem);
-    letter-spacing: -0.035em;
-    line-height: 1.05;
-    margin: 0 0 0.55rem 0;
+    color: var(--lab-ink);
+    font-size: clamp(2.9rem, 5vw, 4.55rem);
+    font-weight: 500;
+    letter-spacing: -0.058em;
+    line-height: 0.97;
+    margin: 0 0 1rem;
 }
 .hero p {
-    color: #cbd5e1;
-    font-size: 1.02rem;
-    line-height: 1.55;
-    max-width: 850px;
-    margin: 0;
+    color: var(--lab-body);
+    font-size: 1.03rem;
+    line-height: 1.62;
+    max-width: 720px;
+    margin: 0 0 1.2rem;
 }
-.pill-row {
+.hero-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.45rem;
-    margin-top: 1rem;
-}
-.pill {
-    color: #bae6fd;
-    background: rgba(14, 165, 233, 0.10);
-    border: 1px solid rgba(56, 189, 248, 0.24);
-    border-radius: 999px;
-    padding: 0.2rem 0.62rem;
-    font-size: 0.76rem;
-}
-.small-note {
     color: var(--lab-muted);
-    font-size: 0.82rem;
-    line-height: 1.5;
+    font-family: var(--lab-mono);
+    font-size: 0.7rem;
+    line-height: 1.7;
+}
+.hero-meta span {
+    padding: 0 0.7rem;
+    border-right: 1px solid var(--lab-border-strong);
+}
+.hero-meta span:first-child {
+    padding-left: 0;
+}
+.hero-meta span:last-child {
+    border-right: 0;
+}
+.hero-aside {
+    align-self: end;
+    border-left: 1px solid var(--lab-border);
+    padding-left: 1.55rem;
+}
+.aside-label {
+    color: var(--lab-muted);
+    font-family: var(--lab-mono);
+    font-size: 0.63rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.55rem;
+}
+.workflow-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.workflow-list li {
+    display: grid;
+    grid-template-columns: 1.45rem minmax(0, 1fr);
+    gap: 0.55rem;
+    padding: 0.66rem 0;
+    border-top: 1px solid var(--lab-border);
+}
+.workflow-list .num {
+    color: var(--lab-accent);
+    font-family: var(--lab-mono);
+    font-size: 0.62rem;
+    padding-top: 0.18rem;
+}
+.workflow-list strong {
+    display: block;
+    color: var(--lab-ink);
+    font-size: 0.83rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+.workflow-list small {
+    display: block;
+    color: var(--lab-muted);
+    font-size: 0.72rem;
+    line-height: 1.4;
+    margin-top: 0.16rem;
+}
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    gap: 2rem;
+    border-bottom: 1px solid var(--lab-border);
+    padding: 0;
+    background: transparent;
+}
+[data-testid="stTabs"] [data-baseweb="tab"] {
+    color: var(--lab-muted);
+    font-size: 0.86rem;
+    font-weight: 500;
+    padding: 0.82rem 0;
+}
+[data-testid="stTabs"] [data-baseweb="tab"]:hover {
+    color: var(--lab-ink);
+}
+[data-testid="stTabs"] [aria-selected="true"] {
+    color: var(--lab-ink);
+}
+[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+    background: var(--lab-ink);
+    height: 2px;
+}
+[data-testid="stTabs"] [data-baseweb="tab-border"] {
+    display: none;
+}
+h2 {
+    color: var(--lab-ink);
+    font-size: 1.72rem;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.16;
+    margin: 1.4rem 0 0.55rem;
+}
+h3 {
+    color: var(--lab-ink);
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.022em;
+    line-height: 1.25;
+    margin: 1.35rem 0 0.45rem;
+}
+p, li {
+    color: var(--lab-body);
+}
+a {
+    color: var(--lab-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+}
+[data-testid="stCaptionContainer"] {
+    color: var(--lab-muted);
+    font-size: 0.78rem;
+    line-height: 1.55;
 }
 [data-testid="stMetric"] {
+    background: var(--lab-surface);
     border: 1px solid var(--lab-border);
-    border-radius: 12px;
-    padding: 0.75rem 0.9rem;
-    background: rgba(15, 23, 42, 0.7);
+    border-radius: 0;
+    padding: 0.95rem 1rem 0.9rem;
 }
-[data-testid="stMetricLabel"] {
-    color: #94a3b8;
+[data-testid="stMetricLabel"] p {
+    color: var(--lab-muted);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
 }
 [data-testid="stMetricValue"] {
-    color: #f8fafc;
+    color: var(--lab-ink);
+    font-family: var(--lab-mono);
+    font-size: clamp(0.96rem, 1.08vw, 1.12rem);
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
-h2, h3 {
-    letter-spacing: -0.015em;
+[data-testid="stDataFrame"] {
+    border: 1px solid var(--lab-border);
+    border-radius: 0;
+}
+[data-testid="stAlert"] {
+    border: 1px solid var(--lab-border);
+    border-left: 3px solid var(--lab-accent);
+    border-radius: 0;
+    background: var(--lab-surface);
+}
+[data-testid="stExpander"] {
+    border: 1px solid var(--lab-border);
+    border-radius: 0;
+    background: var(--lab-surface);
+}
+[data-testid="stExpander"] summary {
+    color: var(--lab-ink);
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+.stButton > button,
+.stDownloadButton > button {
+    border: 1px solid var(--lab-ink) !important;
+    border-radius: 0 !important;
+    background: var(--lab-surface) !important;
+    color: var(--lab-ink) !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    min-height: 2.5rem;
+    transition: background 140ms ease, border-color 140ms ease;
+}
+.stButton > button[kind="primary"] {
+    border-color: var(--lab-accent) !important;
+    background: var(--lab-accent) !important;
+    color: #ffffff !important;
+}
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    border-color: var(--lab-accent) !important;
+    background: var(--lab-accent) !important;
+    color: #ffffff !important;
+}
+.stButton > button[kind="primary"]:hover {
+    border-color: #0043ce !important;
+    background: #0043ce !important;
+}
+[data-baseweb="select"] > div,
+[data-baseweb="input"] > div,
+.stNumberInput input,
+.stTextInput input {
+    border-radius: 0 !important;
+}
+hr {
+    border-color: var(--lab-border) !important;
+}
+code {
+    color: var(--lab-ink);
+    background: #f0f0ee;
+    border-radius: 2px;
+    padding: 0.08rem 0.28rem;
+}
+@media (max-width: 900px) {
+    .hero {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding-top: 1.7rem;
+    }
+    .hero-aside {
+        border-left: 0;
+        border-top: 1px solid var(--lab-border);
+        padding: 1rem 0 0;
+    }
+    .hero h1 {
+        font-size: clamp(2.6rem, 12vw, 3.8rem);
+    }
 }
 </style>
 """
@@ -142,6 +381,7 @@ def _scientific_signature(values: logic.UIConfigInput) -> tuple[Any, ...]:
 
 def _render_sidebar() -> tuple[logic.UIConfigInput, bool]:
     with st.sidebar:
+        st.markdown('<div class="sidebar-kicker">Quantum Lab / Setup</div>', unsafe_allow_html=True)
         st.markdown("## Experiment configuration")
         st.caption("H₂ / STO-3G · local exact-statevector simulation")
 
@@ -184,9 +424,7 @@ def _render_sidebar() -> tuple[logic.UIConfigInput, bool]:
             "Fermion-to-qubit mapping",
             logic.MAPPINGS,
             format_func=lambda value: (
-                "Parity + two-qubit Z2 reduction"
-                if value == "parity"
-                else "Jordan-Wigner (full four qubits)"
+                "Parity + Z₂ reduction" if value == "parity" else "Jordan-Wigner (4 qubits)"
             ),
             key="cfg_mapping",
             help=(
@@ -328,19 +566,49 @@ def _render_hero() -> None:
     st.markdown(
         """
         <div class="hero">
-            <div class="eyebrow">Local scientific workbench</div>
-            <h1>Quantum Lab</h1>
-            <p>
-                Configure, run, and inspect a real variational quantum eigensolver
-                experiment for molecular hydrogen. The dashboard calls the same
-                validated scientific layer as the command-line interface.
-            </p>
-            <div class="pill-row">
-                <span class="pill">H₂ / STO-3G</span>
-                <span class="pill">UCCSD</span>
-                <span class="pill">Exact statevector simulation</span>
-                <span class="pill">No cloud or hardware</span>
+            <div>
+                <div class="eyebrow">Quantum chemistry / reference implementation</div>
+                <h1>Quantum Lab</h1>
+                <p>
+                    A reproducible variational quantum eigensolver for molecular
+                    hydrogen — from PySCF integrals to a two-qubit tapered
+                    Hamiltonian, with exact diagonalization and independent FCI
+                    validation.
+                </p>
+                <div class="hero-meta">
+                    <span>H₂</span>
+                    <span>STO-3G</span>
+                    <span>UCCSD</span>
+                    <span>Parity + Z₂</span>
+                    <span>Exact statevector</span>
+                </div>
             </div>
+            <aside class="hero-aside">
+                <div class="aside-label">Scientific workflow</div>
+                <ol class="workflow-list">
+                    <li>
+                        <span class="num">01</span>
+                        <div>
+                            <strong>Build</strong>
+                            <small>PySCF integrals → qubit Hamiltonian</small>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="num">02</span>
+                        <div>
+                            <strong>Optimize</strong>
+                            <small>UCCSD ansatz + L-BFGS-B</small>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="num">03</span>
+                        <div>
+                            <strong>Validate</strong>
+                            <small>Exact diagonalization + PySCF FCI</small>
+                        </div>
+                    </li>
+                </ol>
+            </aside>
         </div>
         """,
         unsafe_allow_html=True,
@@ -368,7 +636,7 @@ def _render_overview(run: logic.UIRun) -> None:
     passed_checks = sum(value is True for value in applicable_checks)
     if result.status == "success" and passed_checks == len(applicable_checks):
         st.success(
-            f"Run completed successfully. {passed_checks}/{len(applicable_checks)} "
+            f"Run completed successfully — {passed_checks}/{len(applicable_checks)} "
             "scientific checks passed."
         )
     elif result.status == "success":
@@ -379,9 +647,13 @@ def _render_overview(run: logic.UIRun) -> None:
     else:
         st.error(f"The result is marked {result.status!r}; do not treat it as valid evidence.")
 
+    optimizer_wall = result.optimization.get("wall_time_s")
+    optimizer_wall_text = (
+        f"{float(optimizer_wall):.2f} s" if isinstance(optimizer_wall, (int, float)) else "n/a"
+    )
     st.caption(
         f"Recorded {result.created_utc} · UI wall time {run.elapsed_s:.2f} s · "
-        f"optimizer wall time {result.optimization.get('wall_time_s', 'n/a')} s"
+        f"optimizer wall time {optimizer_wall_text}"
     )
 
     st.subheader("Molecular information")
@@ -510,7 +782,12 @@ def _render_overview(run: logic.UIRun) -> None:
             },
         ]
     )
-    st.dataframe(energy_table, hide_index=True, width="stretch")
+    energy_display = energy_table.copy()
+    for column in ("Electronic (Ha)", "Total (Ha)"):
+        energy_display[column] = energy_display[column].map(
+            lambda value: "n/a" if pd.isna(value) else f"{value:.16f}"
+        )
+    st.dataframe(energy_display, hide_index=True, width="stretch")
 
     st.subheader("Variational principle")
     gap = errors.get("signed_variational_gap_electronic")
