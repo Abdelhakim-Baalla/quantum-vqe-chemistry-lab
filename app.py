@@ -10,7 +10,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Quantum Lab",
-    page_icon="⚛️",
+    page_icon="docs/assets/quantum-physics.png",
     layout="wide",
     initial_sidebar_state="expanded",
 )
