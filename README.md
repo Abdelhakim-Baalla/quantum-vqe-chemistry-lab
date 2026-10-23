@@ -111,6 +111,12 @@ Streamlit prints a local URL, normally <http://localhost:8501>. The server is
 intended for local use; do not expose it publicly without adding authentication
 and transport security. No cloud account, API key or quantum hardware is used.
 
+![Quantum Lab dashboard showing a successful H₂ VQE run and molecular information.](docs/assets/quantum-lab-dashboard.png)
+
+*The local Quantum Lab dashboard after a real H₂ run. The displayed values come
+from the app's own execution; the checked-in reference result is documented in
+the table above.*
+
 The dashboard provides:
 
 - **Experiment configuration:** H₂, bond distance, validated basis/ansatz
@@ -446,8 +452,8 @@ but are not attributed to that in-process coverage total.
 
 The CI workflow in `.github/workflows/ci.yml` installs `.[dev,web]` and runs
 linting, formatting checks, unit tests and the chemistry/UI integration tests
-on Python 3.11 and 3.12. The workflow file is checked in, but a GitHub Actions
-run is not claimed as verified from this local environment.
+on Python 3.11 and 3.12. The web UI redesign commit `e66d21f` passed this
+workflow on both Python versions in GitHub Actions run `40016418427`.
 
 ## Project layout
 
@@ -470,7 +476,7 @@ quantum-vqe-chemistry-lab/
 │   ├── visuals.py       # actual-result charts, molecule and circuit artifacts
 │   └── __init__.py
 ├── .streamlit/
-│   └── config.toml      # dark theme and local privacy setting
+│   └── config.toml      # local light editorial theme and privacy setting
 ├── tests/unit/          # fast tests, including web logic and AppTest UI wiring
 ├── tests/integration/   # real H2/PySCF/CLI and real UI-run tests
 ├── examples/            # programmatic examples
