@@ -27,6 +27,9 @@ htmlcov/
 # Generated experiment outputs (keep curated copies in docs/assets/)
 results/
 
+# Launch media (large binary assets, not needed in the repo)
+docs/launch/
+
 # Editors and OS
 .DS_Store
 .idea/
