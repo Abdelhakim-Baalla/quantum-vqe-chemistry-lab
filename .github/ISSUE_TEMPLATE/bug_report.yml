@@ -1,0 +1,82 @@
+name: Bug report
+description: Report a reproducible functional, scientific or UI problem.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the project. Do not include secrets or
+        private data. For security vulnerabilities, use SECURITY.md instead of
+        opening a public issue.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A concise description of the actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Exact commands, configuration values, and steps.
+      placeholder: |
+        python -m quantum_vqe run-h2 --distance 0.735 --mapping parity
+        # or: streamlit run app.py, select ..., click ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and traceback
+      description: Paste the complete traceback in a code block when available.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Scientific pipeline / chemistry
+        - VQE or optimizer
+        - Result schema or export
+        - Streamlit interface
+        - Charts or theme
+        - Documentation
+        - CI or packaging
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: main @ abc1234 or 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, OS, and install command.
+      placeholder: Python 3.12.14, Linux x86_64, pip install -e ".[dev,web]"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: This is not a security vulnerability (see SECURITY.md).
+          required: true
+        - label: I have not included secrets, tokens or private data.
+          required: true

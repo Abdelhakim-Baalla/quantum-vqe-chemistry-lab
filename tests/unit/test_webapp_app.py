@@ -40,6 +40,7 @@ def test_app_starts_and_shows_no_fake_energy_values() -> None:
     assert any("Quantum Lab" in markdown.value for markdown in app.markdown)
     assert app.sidebar.button(key="run_experiment").label == "Run VQE Experiment"
     assert [tab.label for tab in app.tabs] == [
+        "Dashboard",
         "Experiment",
         "Quantum circuit",
         "Convergence",
@@ -147,3 +148,47 @@ def test_app_saves_selected_result_as_json(
     files = sorted(tmp_path.glob("*.json"))
     assert len(files) == 1
     assert ExperimentResult.load(files[0]).to_dict() == official_result.to_dict()
+
+
+def test_theme_switcher_defaults_to_light_and_can_select_dark() -> None:
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    assert app.session_state["theme_mode"] == "Light"
+    assert app.sidebar.radio(key="theme_mode").value == "Light"
+
+    app.sidebar.radio(key="theme_mode").set_value("Dark")
+    app.run(timeout=60)
+
+    assert not app.exception
+    assert not app.error
+    assert app.session_state["theme_mode"] == "Dark"
+
+
+def test_dashboard_empty_state_is_explicit() -> None:
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    assert any("No experiment has run in this session yet" in info.value for info in app.info)
+    assert not app.exception
+
+
+def test_dashboard_metrics_and_charts_render_for_a_real_result(
+    monkeypatch: pytest.MonkeyPatch,
+    official_result: ExperimentResult,
+) -> None:
+    monkeypatch.setattr(
+        logic,
+        "execute_experiment",
+        lambda config: _run_without_circuit(official_result),
+    )
+    app = AppTest.from_file(APP, default_timeout=60).run()
+    app.sidebar.button(key="run_experiment").click()
+    app.run(timeout=60)
+
+    assert not app.exception
+    assert not app.error
+    metrics = {metric.label: metric.value for metric in app.metric}
+    assert (
+        metrics["Best total energy"] == f"{official_result.energies_hartree['vqe_total']:.12f} Ha"
+    )
+    assert metrics["Scientific checks"] == "10/10"
+    assert metrics["Energy evaluations"] == "24"
+    assert metrics["Optimizer iterations"] == "4"
+    assert any(expander.label == "Run manifest and validation matrix" for expander in app.expander)

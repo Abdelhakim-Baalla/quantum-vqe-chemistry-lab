@@ -1,5 +1,10 @@
 # Quantum VQE Chemistry Lab
 
+[![CI](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/actions/workflows/ci.yml)
+[![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/blob/main/pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Citation](https://img.shields.io/badge/citation-CITATION.cff-lightgrey)](CITATION.cff)
+
 A reproducible, open-source laboratory for **variational quantum eigensolver
 (VQE)** experiments in quantum chemistry. The first experiment computes the
 electronic ground-state energy of molecular hydrogen (H₂) in the STO-3G basis,
@@ -111,11 +116,18 @@ Streamlit prints a local URL, normally <http://localhost:8501>. The server is
 intended for local use; do not expose it publicly without adding authentication
 and transport security. No cloud account, API key or quantum hardware is used.
 
-![Quantum Lab dashboard showing a successful H₂ VQE run and molecular information.](docs/assets/quantum-lab-dashboard.png)
+The interface keeps the approved editorial light theme as its default and adds
+a session-level **Light/Dark** switch. Dark mode retints the CSS, Altair charts,
+Matplotlib molecule and Qiskit circuit diagrams; scientific values are
+unchanged. A fixed top-left control keeps the sidebar reopenable after collapse.
 
-*The local Quantum Lab dashboard after a real H₂ run. The displayed values come
-from the app's own execution; the checked-in reference result is documented in
-the table above.*
+| Light | Dark |
+| :---: | :---: |
+| ![Quantum Lab in light mode after a real H₂ VQE run.](docs/assets/quantum-lab-dashboard-light.png) | ![Quantum Lab in dark mode with the real-data diagnostics dashboard.](docs/assets/quantum-lab-dashboard-dark.png) |
+
+*Both screenshots are from the app's own H₂ run. Values come from the app's
+`ExperimentResult`, not from a design mock-up; the checked-in reference result is
+documented in the table above.*
 
 The dashboard provides:
 
@@ -126,12 +138,17 @@ The dashboard provides:
 - **Real execution:** a prominent **Run VQE Experiment** action calls the
   existing `quantum_vqe` pipeline. It does not duplicate the algorithm and does
   not invent energies or convergence data.
+- **Diagnostics dashboard:** twelve run-derived metrics and six real-data views
+  — log energy gap, step improvement, parameter trajectories, correlation
+  energy ledger, Hamiltonian coefficients and parameter-correlation matrix —
+  plus a validation/timing manifest. All panels are computed from the recorded
+  optimizer history and result JSON.
 - **Molecular information:** geometry, electrons, orbitals, qubit count,
   Hamiltonian terms, nuclear repulsion and a clearly labeled illustrative
   H–H geometry.
 - **Quantum circuit explorer:** diagrams generated from the exact UCCSD ansatz
   object used by the run, with qubit count, depth, gate counts and the optimized
-  parameters.
+  parameters. Light and dark PNG variants are precomputed from the same circuit.
 - **Energy results:** electronic and total energies kept separate, absolute
   error in Hartree and milli-Hartree, initial energy, evaluation count,
   convergence status and elapsed time.
@@ -445,7 +462,7 @@ serialization, no-false-success status logic and the Streamlit-independent web
 helpers. Integration tests run the actual H₂ pipeline, compare against FCI and
 JW references, exercise the CLI, reload the JSON result, and run a real H₂
 experiment through Streamlit's `AppTest` UI harness. In the tested environment
-the suite reports **99 unit tests** and **17 integration tests** (116 total),
+the suite reports **106 unit tests** and **17 integration tests** (123 total),
 all passing, with 89% statement coverage for the `quantum_vqe` package. CLI
 subprocess behavior and the server-side AppTest UI harness are tested directly
 but are not attributed to that in-process coverage total.
@@ -481,7 +498,17 @@ quantum-vqe-chemistry-lab/
 ├── tests/integration/   # real H2/PySCF/CLI and real UI-run tests
 ├── examples/            # programmatic examples
 ├── docs/                # methodology, architecture, web interface and experiment report
-└── .github/workflows/   # CI
+│   ├── assets/          # checked-in result, plots and light/dark UI screenshots
+│   └── launch/          # final carousel, video, poster, copy and checksums
+├── .github/
+│   ├── ISSUE_TEMPLATE/  # bug and scoped-feature forms
+│   ├── workflows/ci.yml
+│   └── PULL_REQUEST_TEMPLATE.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CITATION.cff
+├── CHANGELOG.md
+└── CODE_OF_CONDUCT.md
 ```
 
 ## What this demonstrates — and what it does not
@@ -519,6 +546,25 @@ quantum-vqe-chemistry-lab/
 - QAOA Max-Cut or any second quantum algorithm. QAOA is documented as future
   work in [`docs/roadmap.md`](docs/roadmap.md), not implemented here.
 
+## Launch media
+
+The final launch package lives inside this repository under
+[`docs/launch/`](docs/launch/). It is derived from the checked-in official run
+and contains no synthetic results.
+
+- [`docs/launch/carousel/Quantum_Lab_LinkedIn_Carousel.pdf`](docs/launch/carousel/Quantum_Lab_LinkedIn_Carousel.pdf)
+  — 8-page, 4:5 LinkedIn document post.
+- [`docs/launch/video/Quantum_Lab_Launch.mp4`](docs/launch/video/Quantum_Lab_Launch.mp4)
+  — 53-second silent walkthrough (1080p, 25 fps) with a synthetic cursor,
+  click emphasis, on-screen section captions and a closing CTA card.
+- [`docs/launch/video/Quantum_Lab_Launch_poster.jpg`](docs/launch/video/Quantum_Lab_Launch_poster.jpg)
+  — 1920 × 1080 thumbnail; optional captions are in
+  [`Quantum_Lab_Launch.srt`](docs/launch/video/Quantum_Lab_Launch.srt).
+- [`docs/launch/LINKEDIN_POST.md`](docs/launch/LINKEDIN_POST.md) — post copy,
+  alt text, first comment, hashtags and posting guidance.
+- [`docs/launch/README.md`](docs/launch/README.md) — asset map and build notes.
+- [`docs/launch/MANIFEST.sha256`](docs/launch/MANIFEST.sha256) — checksums.
+
 ## Documentation
 
 - [`docs/methodology.md`](docs/methodology.md): equations, mapping details,
@@ -552,6 +598,15 @@ quantum-vqe-chemistry-lab/
 - OpenFermion and Qiskit Nature mapping conventions are described in the
   Qiskit Nature API docs:
   <https://qiskit-community.github.io/qiskit-nature/apidocs/qiskit_nature.second_q.mappers.html>
+
+## Contributing, security and citation
+
+- Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, verification commands and
+  the scientific-integrity checklist.
+- Report vulnerabilities privately according to [`SECURITY.md`](SECURITY.md).
+- Citation metadata is in [`CITATION.cff`](CITATION.cff). If you use the
+  software or the checked-in H₂ reference result, please cite the repository.
+- Release history is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## License
 

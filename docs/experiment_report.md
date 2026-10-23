@@ -259,10 +259,11 @@ The following commands were executed in the project environment.
 .venv/bin/ruff format --check .
 ```
 
-At the time of this report, the suite reports **99 passed** for the unit tests
-and **17 passed** for the integration tests (116 total), with **89% statement
-coverage**. CLI subprocess behavior and the server-side Streamlit AppTest harness are
-tested directly but are not attributed to the in-process coverage total. The integration suite covers:
+In the current repository, the suite reports **106 passed** for the unit tests
+and **17 passed** for the integration tests (123 total), with **89% statement
+coverage** for the `quantum_vqe` package. CLI subprocess behavior and the
+server-side Streamlit AppTest harness are tested directly but are not attributed
+to the in-process coverage total. The integration suite covers:
 
 - the default H₂ run and all scientific checks,
 - molecular dimensions and nuclear repulsion,
@@ -277,11 +278,13 @@ tested directly but are not attributed to the in-process coverage total. The int
 - a real H₂ experiment executed through the local UI, with its actual circuit
   artifacts and displayed metrics checked against the scientific result.
 
-Graphical browser automation was not available in this environment. The UI was
-verified with Streamlit's server-side `AppTest` harness, and the local server
-was started on `127.0.0.1` and checked through its `/_stcore/health` endpoint
-and HTTP page response. This is stronger than a screenshot-only check for
-execution behavior, but it is not a cross-browser visual regression test.
+The automated suite verifies the UI with Streamlit's server-side `AppTest`
+harness, and the local server was started on `127.0.0.1` and checked through its
+`/_stcore/health` endpoint and HTTP page response. This checks execution
+behavior rather than only pixels. The launch screenshots and video were captured
+separately with Playwright against the real local server; they are not part of
+the automated test matrix and do not replace cross-browser visual regression
+testing.
 
 Additional smoke runs executed for this report:
 
@@ -346,12 +349,13 @@ them rather than having them appear as an unexplained test failure.
 
 ### Unverified / out of scope
 
-- **Graphical browser automation.** No browser automation was available. The
-  server-side UI harness and localhost health/page checks were used instead; no
-  cross-browser screenshot or layout-regression claim is made.
-- **GitHub Actions execution.** The workflow file is present and its commands
-  pass locally, but this environment has no remote GitHub Actions run to
-  inspect.
+- **Automated cross-browser visual regression.** Playwright was used against the
+  local Chromium build for the launch screenshots and screen recording, but no
+  cross-browser screenshot-diff or layout-regression suite runs in CI. The
+  server-side AppTest harness remains the automated UI check.
+- **GitHub Actions execution.** The workflow is configured for Python 3.11 and
+  3.12 and its commands pass locally; the repository badge and Actions run are
+  the authoritative remote result.
 - **Quantum hardware.** No IBM Quantum account, cloud service, hardware,
   shot noise, gate error, decoherence or readout error is used.
 - **Shot-based simulation.** The estimator is exact statevector; finite-shot

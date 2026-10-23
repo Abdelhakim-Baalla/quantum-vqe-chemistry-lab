@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/security/advisories/new
+    about: Please report vulnerabilities privately, not as a public issue.
+  - name: Contribution guide
+    url: https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/blob/main/CONTRIBUTING.md
+    about: Setup, verification commands and scientific integrity rules.
+  - name: Architecture overview
+    url: https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/blob/main/docs/architecture.md
+    about: Module boundaries, data flow and testing structure.

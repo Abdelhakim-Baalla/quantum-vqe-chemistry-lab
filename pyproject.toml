@@ -59,6 +59,9 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+# Archived launch-media generators depend on Playwright, local fonts and ffmpeg.
+# They are documented and retained, but are not part of the library lint target.
+extend-exclude = ["docs/launch/scripts"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "C4"]

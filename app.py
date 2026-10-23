@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import traceback
 from typing import Any
 
@@ -54,12 +55,17 @@ html, body, [class*="css"] {
 [data-testid="stHeader"] {
     background: transparent;
 }
-[data-testid="stToolbar"],
+[data-testid="stAppDeployButton"],
+[data-testid="stToolbarActions"],
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
 #MainMenu,
 footer {
     display: none !important;
+}
+[data-testid="stToolbar"] {
+    background: transparent;
+    padding: 0;
 }
 .block-container {
     padding-top: 1.9rem;
@@ -81,6 +87,7 @@ footer {
     font-weight: 600;
     letter-spacing: -0.02em;
     margin: 0 0 0.15rem;
+    padding: 0;
 }
 [data-testid="stSidebar"] hr {
     border-color: var(--lab-border);
@@ -95,15 +102,93 @@ footer {
     text-transform: uppercase;
     margin-bottom: 0.42rem;
 }
+.sidebar-theme-label {
+    color: var(--lab-muted);
+    font-family: var(--lab-mono);
+    font-size: 0.58rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0.1rem 0 0.35rem;
+}
+[data-testid="stSidebar"] [role="radiogroup"] {
+    gap: 0.35rem;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    border: 1px solid var(--lab-border);
+    background: var(--lab-bg);
+    padding: 0.32rem 0.65rem;
+    margin-right: 0.1rem;
+    transition: border-color 140ms ease, background 140ms ease;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:hover {
+    border-color: var(--lab-border-strong);
+}
+[data-testid="stSidebar"] [role="radiogroup"] label p {
+    color: var(--lab-body);
+    font-size: 0.74rem;
+    font-weight: 500;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+    border-color: var(--lab-accent);
+    background: var(--lab-accent-soft);
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) p {
+    color: var(--lab-accent);
+}
+[data-testid="stSidebarCollapseButton"] {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stExpandSidebarButton"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 1000000 !important;
+}
+[data-testid="stExpandSidebarButton"] {
+    position: fixed !important;
+    top: 0.8rem !important;
+    left: 0.8rem !important;
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+    align-items: center;
+    justify-content: center;
+    background: var(--lab-surface) !important;
+    border: 1px solid var(--lab-border-strong) !important;
+    border-radius: 0 !important;
+    color: var(--lab-ink) !important;
+    box-shadow: 0 2px 12px rgba(22, 22, 22, 0.1);
+}
+[data-testid="stSidebarCollapsedControl"] button,
+[data-testid="stExpandSidebarButton"] button {
+    background: var(--lab-surface) !important;
+    border: 1px solid var(--lab-border-strong) !important;
+    border-radius: 0 !important;
+    color: var(--lab-ink) !important;
+    box-shadow: 0 1px 0 rgba(22, 22, 22, 0.05);
+}
+[data-testid="stSidebarCollapsedControl"] button:hover,
+[data-testid="stExpandSidebarButton"]:hover,
+[data-testid="stExpandSidebarButton"] button:hover {
+    border-color: var(--lab-accent) !important;
+    color: var(--lab-accent) !important;
+}
+[data-testid="stSidebarCollapsedControl"] svg,
+[data-testid="stExpandSidebarButton"] svg {
+    fill: currentColor !important;
+}
+[data-testid="stExpandSidebarButton"] span {
+    color: var(--lab-ink) !important;
+}
 .hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.72fr);
-    gap: 2.8rem;
     border-top: 1px solid var(--lab-border-strong);
     border-bottom: 1px solid var(--lab-border);
     padding: 2.35rem 0 2.15rem;
     margin-bottom: 1.15rem;
     background: transparent;
+    max-width: 1040px;
 }
 .eyebrow {
     color: var(--lab-accent);
@@ -126,72 +211,8 @@ footer {
     color: var(--lab-body);
     font-size: 1.03rem;
     line-height: 1.62;
-    max-width: 720px;
-    margin: 0 0 1.2rem;
-}
-.hero-meta {
-    display: flex;
-    flex-wrap: wrap;
-    color: var(--lab-muted);
-    font-family: var(--lab-mono);
-    font-size: 0.7rem;
-    line-height: 1.7;
-}
-.hero-meta span {
-    padding: 0 0.7rem;
-    border-right: 1px solid var(--lab-border-strong);
-}
-.hero-meta span:first-child {
-    padding-left: 0;
-}
-.hero-meta span:last-child {
-    border-right: 0;
-}
-.hero-aside {
-    align-self: end;
-    border-left: 1px solid var(--lab-border);
-    padding-left: 1.55rem;
-}
-.aside-label {
-    color: var(--lab-muted);
-    font-family: var(--lab-mono);
-    font-size: 0.63rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 0.55rem;
-}
-.workflow-list {
-    list-style: none;
+    max-width: 760px;
     margin: 0;
-    padding: 0;
-}
-.workflow-list li {
-    display: grid;
-    grid-template-columns: 1.45rem minmax(0, 1fr);
-    gap: 0.55rem;
-    padding: 0.66rem 0;
-    border-top: 1px solid var(--lab-border);
-}
-.workflow-list .num {
-    color: var(--lab-accent);
-    font-family: var(--lab-mono);
-    font-size: 0.62rem;
-    padding-top: 0.18rem;
-}
-.workflow-list strong {
-    display: block;
-    color: var(--lab-ink);
-    font-size: 0.83rem;
-    font-weight: 600;
-    line-height: 1.3;
-}
-.workflow-list small {
-    display: block;
-    color: var(--lab-muted);
-    font-size: 0.72rem;
-    line-height: 1.4;
-    margin-top: 0.16rem;
 }
 [data-testid="stTabs"] [data-baseweb="tab-list"] {
     gap: 2rem;
@@ -300,9 +321,13 @@ a {
     min-height: 2.5rem;
     transition: background 140ms ease, border-color 140ms ease;
 }
-.stButton > button[kind="primary"] {
+.stButton > button[kind="primary"],
+[data-testid="stBaseButton-primary"] {
     border-color: var(--lab-accent) !important;
     background: var(--lab-accent) !important;
+    color: #ffffff !important;
+}
+[data-testid="stBaseButton-primary"] * {
     color: #ffffff !important;
 }
 .stButton > button:hover,
@@ -332,18 +357,183 @@ code {
 }
 @media (max-width: 900px) {
     .hero {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
         padding-top: 1.7rem;
-    }
-    .hero-aside {
-        border-left: 0;
-        border-top: 1px solid var(--lab-border);
-        padding: 1rem 0 0;
     }
     .hero h1 {
         font-size: clamp(2.6rem, 12vw, 3.8rem);
     }
+    [data-testid="stTabs"] [data-baseweb="tab-list"] {
+        gap: 1.15rem;
+        overflow-x: auto;
+    }
+}
+</style>
+"""
+
+
+_DARK_CSS = """
+<style>
+:root {
+    --background-color: #0b0f16;
+    --secondary-background-color: #121821;
+    --text-color: #f4f4f4;
+    --primary-color: #78a9ff;
+    --lab-bg: #0b0f16;
+    --lab-surface: #121821;
+    --lab-ink: #f4f4f4;
+    --lab-body: #d0d0d0;
+    --lab-muted: #a8b2c1;
+    --lab-subtle: #8d9aab;
+    --lab-border: #2a3444;
+    --lab-border-strong: #3d4a5f;
+    --lab-accent: #78a9ff;
+    --lab-accent-soft: #17233a;
+    --lab-success: #42be65;
+    --lab-danger: #ff8389;
+}
+html, body {
+    background: var(--lab-bg);
+    color: var(--lab-ink);
+    color-scheme: dark;
+}
+.stApp {
+    background: var(--lab-bg);
+    color: var(--lab-ink);
+}
+[data-testid="stSidebar"] {
+    background: var(--lab-surface);
+    border-right-color: var(--lab-border);
+}
+[data-testid="stSidebarCollapsedControl"] button,
+[data-testid="stExpandSidebarButton"] {
+    background: var(--lab-surface) !important;
+    border-color: var(--lab-border-strong) !important;
+    color: var(--lab-ink) !important;
+}
+[data-testid="stExpandSidebarButton"] span {
+    color: var(--lab-ink) !important;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label {
+    background: var(--lab-bg);
+    border-color: var(--lab-border);
+}
+[data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) {
+    background: var(--lab-accent-soft);
+    border-color: var(--lab-accent);
+}
+h1, h2, h3, h4, h5, h6,
+[data-testid="stHeadingWithActionElements"] span[data-heading-text],
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h2 span {
+    color: var(--lab-ink) !important;
+}
+[data-testid="stSelectbox"] [role="group"],
+[data-testid="stSelectbox"] input,
+[data-testid="stNumberInputContainer"],
+[data-testid="stNumberInputField"],
+[data-testid="stTextInput"] input,
+[data-testid="stTextArea"] textarea,
+[data-testid="stSelectbox"] button,
+[data-testid="stNumberInputStepDown"],
+[data-testid="stNumberInputStepUp"] {
+    background: var(--lab-surface) !important;
+    border-color: var(--lab-border) !important;
+    color: var(--lab-ink) !important;
+}
+[data-testid="stSelectbox"] button {
+    background: transparent !important;
+    color: var(--lab-muted) !important;
+}
+[data-testid="stSelectbox"] [role="group"]:focus-within {
+    border-color: var(--lab-accent) !important;
+}
+[role="listbox"] {
+    background: var(--lab-surface) !important;
+    color: var(--lab-ink) !important;
+    border: 1px solid var(--lab-border) !important;
+}
+[role="option"] {
+    color: var(--lab-body) !important;
+}
+[role="option"]:hover,
+[role="option"][aria-selected="true"] {
+    background: var(--lab-accent-soft) !important;
+    color: var(--lab-ink) !important;
+}
+[data-baseweb="select"] > div,
+[data-baseweb="input"] > div {
+    background: var(--lab-surface) !important;
+    border-color: var(--lab-border) !important;
+    color: var(--lab-ink) !important;
+}
+[data-baseweb="select"] svg,
+[data-baseweb="input"] svg {
+    fill: var(--lab-muted) !important;
+}
+[data-testid="stDataFrame"] {
+    background: var(--lab-surface);
+    color: var(--lab-ink);
+}
+[data-testid="stAlert"] {
+    background: var(--lab-surface);
+}
+[data-testid="stExpander"] {
+    background: var(--lab-surface);
+}
+[data-testid="stExpander"] details,
+[data-testid="stExpander"] summary {
+    background: transparent;
+    color: var(--lab-ink);
+}
+code {
+    color: var(--lab-ink);
+    background: #1b2330;
+}
+.stButton > button,
+.stDownloadButton > button {
+    border-color: var(--lab-border-strong) !important;
+    background: var(--lab-surface) !important;
+    color: var(--lab-ink) !important;
+}
+.stButton > button[kind="primary"],
+[data-testid="stBaseButton-primary"] {
+    border-color: var(--lab-accent) !important;
+    background: var(--lab-accent) !important;
+    color: #0b0f16 !important;
+}
+[data-testid="stBaseButton-primary"] * {
+    color: #0b0f16 !important;
+}
+.stButton > button:hover,
+.stDownloadButton > button:hover {
+    border-color: var(--lab-accent) !important;
+    background: var(--lab-accent) !important;
+    color: #0b0f16 !important;
+}
+[data-testid="stCaptionContainer"] {
+    color: var(--lab-muted);
+}
+[data-testid="stMetricLabel"] p {
+    color: var(--lab-muted);
+}
+[data-testid="stMetricValue"] {
+    color: var(--lab-ink);
+}
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    border-bottom-color: var(--lab-border);
+}
+[data-testid="stTabs"] [data-baseweb="tab"] {
+    color: var(--lab-muted);
+}
+[data-testid="stTabs"] [data-baseweb="tab"]:hover,
+[data-testid="stTabs"] [aria-selected="true"] {
+    color: var(--lab-ink);
+}
+[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+    background: var(--lab-ink);
+}
+hr {
+    border-color: var(--lab-border) !important;
 }
 </style>
 """
@@ -379,9 +569,18 @@ def _scientific_signature(values: logic.UIConfigInput) -> tuple[Any, ...]:
     )
 
 
-def _render_sidebar() -> tuple[logic.UIConfigInput, bool]:
+def _render_sidebar() -> tuple[logic.UIConfigInput, bool, str]:
     with st.sidebar:
         st.markdown('<div class="sidebar-kicker">Quantum Lab / Setup</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sidebar-theme-label">Appearance</div>', unsafe_allow_html=True)
+        theme = st.radio(
+            "Appearance",
+            ("Light", "Dark"),
+            index=0,
+            horizontal=True,
+            key="theme_mode",
+            label_visibility="collapsed",
+        )
         st.markdown("## Experiment configuration")
         st.caption("H₂ / STO-3G · local exact-statevector simulation")
 
@@ -515,6 +714,7 @@ def _render_sidebar() -> tuple[logic.UIConfigInput, bool]:
             output_dir=output_dir,
         ),
         run_clicked,
+        theme,
     )
 
 
@@ -566,49 +766,14 @@ def _render_hero() -> None:
     st.markdown(
         """
         <div class="hero">
-            <div>
-                <div class="eyebrow">Quantum chemistry / reference implementation</div>
-                <h1>Quantum Lab</h1>
-                <p>
-                    A reproducible variational quantum eigensolver for molecular
-                    hydrogen — from PySCF integrals to a two-qubit tapered
-                    Hamiltonian, with exact diagonalization and independent FCI
-                    validation.
-                </p>
-                <div class="hero-meta">
-                    <span>H₂</span>
-                    <span>STO-3G</span>
-                    <span>UCCSD</span>
-                    <span>Parity + Z₂</span>
-                    <span>Exact statevector</span>
-                </div>
-            </div>
-            <aside class="hero-aside">
-                <div class="aside-label">Scientific workflow</div>
-                <ol class="workflow-list">
-                    <li>
-                        <span class="num">01</span>
-                        <div>
-                            <strong>Build</strong>
-                            <small>PySCF integrals → qubit Hamiltonian</small>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="num">02</span>
-                        <div>
-                            <strong>Optimize</strong>
-                            <small>UCCSD ansatz + L-BFGS-B</small>
-                        </div>
-                    </li>
-                    <li>
-                        <span class="num">03</span>
-                        <div>
-                            <strong>Validate</strong>
-                            <small>Exact diagonalization + PySCF FCI</small>
-                        </div>
-                    </li>
-                </ol>
-            </aside>
+            <div class="eyebrow">H₂ / reference implementation</div>
+            <h1>Quantum Lab</h1>
+            <p>
+                A reproducible variational quantum eigensolver for molecular
+                hydrogen — from PySCF integrals to a two-qubit tapered
+                Hamiltonian, with exact diagonalization and independent FCI
+                validation.
+            </p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -626,7 +791,7 @@ def _render_error() -> None:
             st.code(trace, language="text")
 
 
-def _render_overview(run: logic.UIRun) -> None:
+def _render_overview(run: logic.UIRun, *, theme: str) -> None:
     result = run.result
     molecule = result.molecule
     energies = result.energies_hartree
@@ -659,7 +824,7 @@ def _render_overview(run: logic.UIRun) -> None:
     st.subheader("Molecular information")
     left, right = st.columns([0.9, 1.1], gap="large")
     with left:
-        fig = visuals.molecule_figure(molecule["bond_length_angstrom"])
+        fig = visuals.molecule_figure(molecule["bond_length_angstrom"], theme=theme)
         st.pyplot(fig, clear_figure=True)
         st.caption(
             "Illustrative H-H geometry only. This is not an orbital, electron-density, "
@@ -847,7 +1012,7 @@ def _render_overview(run: logic.UIRun) -> None:
         )
 
 
-def _render_circuit(run: logic.UIRun) -> None:
+def _render_circuit(run: logic.UIRun, *, theme: str) -> None:
     artifacts = run.circuit
     st.subheader("Quantum circuit explorer")
     st.caption(
@@ -864,6 +1029,11 @@ def _render_circuit(run: logic.UIRun) -> None:
             st.code(run.circuit_error, language="text")
         return
 
+    use_dark = theme == "Dark"
+
+    def diagram(light: bytes, dark: bytes) -> bytes:
+        return dark if use_dark else light
+
     summary = artifacts.summary
     metrics = st.columns(4)
     metrics[0].metric("Qubits", summary["num_qubits"], border=True)
@@ -875,19 +1045,28 @@ def _render_circuit(run: logic.UIRun) -> None:
         ["Basis-gate decomposition", "Pauli evolution", "As built", "Parameters"]
     )
     with decomposed_tab:
-        st.image(artifacts.diagram_basis_png, width="stretch")
+        st.image(
+            diagram(artifacts.diagram_basis_png, artifacts.diagram_basis_png_dark),
+            width="stretch",
+        )
         st.caption(
             "Two decomposition levels from the executed ansatz. Decomposition "
             "preserves the unitary; it only exposes the underlying gates."
         )
     with pauli_tab:
-        st.image(artifacts.diagram_pauli_png, width="stretch")
+        st.image(
+            diagram(artifacts.diagram_pauli_png, artifacts.diagram_pauli_png_dark),
+            width="stretch",
+        )
         st.caption(
             "One decomposition level: the UCCSD evolution block expanded into "
             "Pauli-evolution gates."
         )
     with as_built_tab:
-        st.image(artifacts.diagram_as_built_png, width="stretch")
+        st.image(
+            diagram(artifacts.diagram_as_built_png, artifacts.diagram_as_built_png_dark),
+            width="stretch",
+        )
         st.caption(
             "The ansatz exactly as constructed. The single UCCSD evolution block "
             "is compact by design."
@@ -909,7 +1088,7 @@ def _render_circuit(run: logic.UIRun) -> None:
         st.code(artifacts.text_diagram, language="text")
 
 
-def _render_convergence(run: logic.UIRun) -> None:
+def _render_convergence(run: logic.UIRun, *, theme: str) -> None:
     result = run.result
     st.subheader("Convergence history")
     st.caption(
@@ -920,7 +1099,7 @@ def _render_convergence(run: logic.UIRun) -> None:
 
     try:
         frame = visuals.convergence_frame(result)
-        chart = visuals.convergence_chart(result)
+        chart = visuals.convergence_chart(result, theme=theme)
     except Exception as exc:
         st.error(f"Could not build the convergence view: {type(exc).__name__}: {exc}")
         return
@@ -961,6 +1140,179 @@ def _render_convergence(run: logic.UIRun) -> None:
         }
     )
     st.dataframe(display, hide_index=True, width="stretch")
+
+
+def _render_dashboard(run: logic.UIRun | None, *, theme: str) -> None:
+    st.subheader("Run dashboard")
+    st.caption(
+        "An analytical view of one completed run. Every number is computed from "
+        "the recorded result and optimizer history; no points are interpolated."
+    )
+    if run is None:
+        st.info(
+            "No experiment has run in this session yet. Select **Run VQE Experiment** "
+            "in the sidebar to populate the dashboard with real diagnostics."
+        )
+        return
+
+    result = run.result
+    energies = result.energies_hartree
+    errors = result.errors_hartree
+    optimization = result.optimization
+    applicable = [value for value in result.checks.values() if value is not None]
+    passed = sum(value is True for value in applicable)
+
+    if result.status == "success" and passed == len(applicable):
+        st.success(
+            f"Run verified — {passed}/{len(applicable)} scientific checks passed. "
+            "The charts below are derived from this run."
+        )
+    elif result.status == "success":
+        st.warning(
+            f"Run completed with {passed}/{len(applicable)} checks passing. "
+            "Treat the diagnostics as provisional."
+        )
+    else:
+        st.error(f"Run status is {result.status!r}; do not use it as validated evidence.")
+
+    absolute_error = errors.get("absolute_vqe_vs_exact_total")
+    final_parameters = optimization.get("final_parameters") or []
+    parameter_norm = (
+        math.sqrt(sum(float(value) ** 2 for value in final_parameters))
+        if final_parameters
+        else None
+    )
+    depth = run.circuit.summary.get("depth_decomposed") if run.circuit else None
+    total_time = result.timing_seconds.get("total")
+    hf_electronic = energies.get("hf_electronic")
+    vqe_electronic = energies.get("vqe_electronic")
+    energy_reduction_mha = (
+        (float(hf_electronic) - float(vqe_electronic)) * 1000.0
+        if hf_electronic is not None and vqe_electronic is not None
+        else None
+    )
+
+    first = st.columns(4)
+    first[0].metric("Best total energy", _format_energy(energies.get("vqe_total")), border=True)
+    first[1].metric(
+        "Exact total energy", _format_energy(energies.get("exact_qubit_total")), border=True
+    )
+    first[2].metric(
+        "Absolute error",
+        "n/a" if absolute_error is None else f"{absolute_error:.3e} Ha",
+        border=True,
+    )
+    first[3].metric("Scientific checks", f"{passed}/{len(applicable)}", border=True)
+
+    second = st.columns(4)
+    second[0].metric(
+        "Energy evaluations",
+        str(optimization.get("energy_evaluations", "n/a")),
+        border=True,
+    )
+    second[1].metric("Optimizer iterations", str(optimization.get("nit", "n/a")), border=True)
+    second[2].metric(
+        "Correlation energy",
+        "n/a" if energy_reduction_mha is None else f"{energy_reduction_mha:.3f} mHa",
+        border=True,
+    )
+    second[3].metric(
+        "Total runtime",
+        "n/a" if total_time is None else f"{float(total_time):.3f} s",
+        border=True,
+    )
+
+    third = st.columns(4)
+    third[0].metric(
+        "Final parameter norm",
+        "n/a" if parameter_norm is None else f"{parameter_norm:.5f} rad",
+        border=True,
+    )
+    third[1].metric(
+        "Circuit depth",
+        "n/a" if depth is None else str(depth),
+        border=True,
+    )
+    third[2].metric(
+        "Qubits / Pauli terms",
+        f"{result.hamiltonian.get('num_qubits', 'n/a')} / "
+        f"{result.hamiltonian.get('num_terms', 'n/a')}",
+        border=True,
+    )
+    third[3].metric(
+        "Statevector dimension",
+        f"{2 ** int(result.hamiltonian.get('num_qubits', 0)):,}",
+        border=True,
+    )
+
+    st.divider()
+
+    def chart(builder, caption: str) -> None:
+        try:
+            st.altair_chart(builder(), width="stretch")
+        except Exception as exc:
+            st.warning(f"Could not render this panel: {type(exc).__name__}: {exc}")
+            return
+        st.caption(caption)
+
+    left, right = st.columns(2, gap="large")
+    with left:
+        chart(
+            lambda: visuals.dashboard_error_chart(result, theme=theme),
+            "Absolute gap to exact diagonalization on a logarithmic scale. "
+            "The best-so-far trace is a cumulative minimum of the recorded points.",
+        )
+        chart(
+            lambda: visuals.dashboard_improvement_chart(result, theme=theme),
+            "Best-energy reduction at each recorded evaluation. Zero-height bars are "
+            "evaluations that did not improve the incumbent.",
+        )
+        chart(
+            lambda: visuals.dashboard_parameter_chart(result, theme=theme),
+            "All optimized UCCSD angles as recorded by the optimizer, without smoothing.",
+        )
+    with right:
+        chart(
+            lambda: visuals.dashboard_energy_ledger_chart(result, theme=theme),
+            "Electronic energies expressed in milli-Hartree relative to the "
+            "Hartree–Fock reference from the same run.",
+        )
+        chart(
+            lambda: visuals.dashboard_pauli_chart(result, theme=theme),
+            "Coefficients of the actual mapped qubit Hamiltonian. "
+            "The identity term sets the energy offset.",
+        )
+        chart(
+            lambda: visuals.dashboard_correlation_chart(result, theme=theme),
+            "Pearson correlation of the recorded parameter paths. "
+            "This is a descriptive diagnostic, not a causal claim.",
+        )
+
+    with st.expander("Run manifest and validation matrix"):
+        check_frame = pd.DataFrame(
+            [
+                {
+                    "Check": name,
+                    "Result": "not applicable" if value is None else ("pass" if value else "fail"),
+                }
+                for name, value in result.checks.items()
+            ]
+        )
+        timing = pd.DataFrame(
+            [{"Stage": name, "Seconds": value} for name, value in result.timing_seconds.items()]
+        )
+        manifest_left, manifest_right = st.columns([1.15, 0.85], gap="large")
+        with manifest_left:
+            st.markdown("**Scientific checks**")
+            st.dataframe(check_frame, hide_index=True, width="stretch")
+        with manifest_right:
+            st.markdown("**Phase timings**")
+            st.dataframe(timing, hide_index=True, width="stretch")
+        st.caption(
+            f"Recorded {result.created_utc} · "
+            f"{result.optimizer.get('name', 'n/a')} · "
+            f"{result.simulator.get('name', 'exact statevector')}"
+        )
 
 
 def _render_history(values: logic.UIConfigInput) -> None:
@@ -1126,17 +1478,20 @@ def _render_learn(run: logic.UIRun | None) -> None:
 
 def main() -> None:
     st.markdown(_CSS, unsafe_allow_html=True)
+    if st.session_state.get("theme_mode", "Light") == "Dark":
+        st.markdown(_DARK_CSS, unsafe_allow_html=True)
     for key, default in (
         ("history", []),
         ("run", None),
         ("last_error", None),
         ("last_traceback", None),
         ("last_input", None),
+        ("theme_mode", "Light"),
     ):
         if key not in st.session_state:
             st.session_state[key] = default
 
-    values, run_clicked = _render_sidebar()
+    values, run_clicked, theme = _render_sidebar()
     _handle_run(values, run_clicked)
 
     _render_hero()
@@ -1155,14 +1510,22 @@ def main() -> None:
             "to evaluate the new settings."
         )
 
-    tabs = st.tabs(["Experiment", "Quantum circuit", "Convergence", "History", "Learn"])
+    tabs = st.tabs(
+        ["Dashboard", "Experiment", "Quantum circuit", "Convergence", "History", "Learn"]
+    )
 
     with tabs[0]:
+        _render_dashboard(run, theme=theme)
+
+    with tabs[1]:
         if run is None:
             st.subheader("Molecular model")
             left, right = st.columns([0.9, 1.1], gap="large")
             with left:
-                st.pyplot(visuals.molecule_figure(values.distance_angstrom), clear_figure=True)
+                st.pyplot(
+                    visuals.molecule_figure(values.distance_angstrom, theme=theme),
+                    clear_figure=True,
+                )
                 st.caption(
                     "Illustrative H-H geometry only. This is not an orbital, "
                     "electron-density, or quantum-state visualization."
@@ -1191,24 +1554,24 @@ def main() -> None:
                 "and run the variational loop. No placeholder energies are shown."
             )
         else:
-            _render_overview(run)
-
-    with tabs[1]:
-        if run is None:
-            st.info("Run an experiment to render the actual ansatz circuit used by the VQE.")
-        else:
-            _render_circuit(run)
+            _render_overview(run, theme=theme)
 
     with tabs[2]:
         if run is None:
-            st.info("Run an experiment to view the recorded convergence history.")
+            st.info("Run an experiment to render the actual ansatz circuit used by the VQE.")
         else:
-            _render_convergence(run)
+            _render_circuit(run, theme=theme)
 
     with tabs[3]:
-        _render_history(values)
+        if run is None:
+            st.info("Run an experiment to view the recorded convergence history.")
+        else:
+            _render_convergence(run, theme=theme)
 
     with tabs[4]:
+        _render_history(values)
+
+    with tabs[5]:
         _render_learn(run)
 
     st.divider()

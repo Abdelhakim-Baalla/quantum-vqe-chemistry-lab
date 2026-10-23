@@ -64,6 +64,9 @@ class CircuitArtifacts:
     diagram_basis_png: bytes
     diagram_pauli_png: bytes
     diagram_as_built_png: bytes
+    diagram_basis_png_dark: bytes
+    diagram_pauli_png_dark: bytes
+    diagram_as_built_png_dark: bytes
     text_diagram: str
 
 
@@ -189,9 +192,12 @@ def execute_experiment(config: ExperimentConfig) -> UIRun:
             summary_frame=summary_frame,
             parameter_frame=visuals.parameter_frame(result, chemistry.ansatz),
             gate_counts_frame=visuals.gate_counts_frame(chemistry.ansatz),
-            diagram_basis_png=visuals.circuit_png(chemistry.ansatz, reps=2),
-            diagram_pauli_png=visuals.circuit_png(chemistry.ansatz, reps=1),
-            diagram_as_built_png=visuals.circuit_png(chemistry.ansatz, reps=0),
+            diagram_basis_png=visuals.circuit_png(chemistry.ansatz, reps=2, theme="light"),
+            diagram_pauli_png=visuals.circuit_png(chemistry.ansatz, reps=1, theme="light"),
+            diagram_as_built_png=visuals.circuit_png(chemistry.ansatz, reps=0, theme="light"),
+            diagram_basis_png_dark=visuals.circuit_png(chemistry.ansatz, reps=2, theme="dark"),
+            diagram_pauli_png_dark=visuals.circuit_png(chemistry.ansatz, reps=1, theme="dark"),
+            diagram_as_built_png_dark=visuals.circuit_png(chemistry.ansatz, reps=0, theme="dark"),
             text_diagram=str(chemistry.ansatz.draw("text")),
         )
     except Exception as exc:  # a valid scientific result should still be shown

@@ -123,3 +123,79 @@ def test_gate_counts_frame_covers_all_decomposition_levels() -> None:
     assert as_built["h"] == 1
     assert as_built["cx"] == 1
     assert (frame["Count"] > 0).all()
+
+
+def test_dashboard_frame_is_derived_from_recorded_history(
+    official_result: ExperimentResult,
+) -> None:
+    frame = visuals.dashboard_frame(official_result)
+    history = official_result.optimization["history"]
+    exact = official_result.energies_hartree["exact_qubit_electronic"]
+
+    assert len(frame) == len(history)
+    assert frame["energy_hartree"].tolist() == [point["energy_hartree"] for point in history]
+    assert frame["gap_hartree"].iloc[0] == pytest.approx(abs(history[0]["energy_hartree"] - exact))
+    assert frame["best_gap_hartree"].iloc[-1] == pytest.approx(
+        abs(min(point["energy_hartree"] for point in history) - exact)
+    )
+    assert frame["step_improvement_mha"].sum() == pytest.approx(
+        (history[0]["energy_hartree"] - min(point["energy_hartree"] for point in history)) * 1000.0
+    )
+    assert {"t[0]", "t[1]", "t[2]"}.issubset(frame.columns)
+
+
+def test_dashboard_charts_use_the_recorded_dashboard_frame(
+    official_result: ExperimentResult,
+) -> None:
+    frame = visuals.dashboard_frame(official_result)
+    error_spec = visuals.dashboard_error_chart(official_result).to_dict()
+    improvement_spec = visuals.dashboard_improvement_chart(official_result).to_dict()
+    ledger_spec = visuals.dashboard_energy_ledger_chart(official_result).to_dict()
+
+    error_rows = [
+        row
+        for dataset in error_spec["datasets"].values()
+        for row in dataset
+        if row.get("trace") == "Recorded evaluation"
+    ]
+    positive = frame[frame["gap_hartree"] > 0]
+    assert len(error_rows) == len(positive)
+    assert [row["gap"] for row in error_rows] == positive["gap_hartree"].tolist()
+
+    improvement_rows = [row for dataset in improvement_spec["datasets"].values() for row in dataset]
+    assert len(improvement_rows) == len(frame)
+    assert [row["step_improvement_mha"] for row in improvement_rows] == frame[
+        "step_improvement_mha"
+    ].tolist()
+
+    ledger_rows = [row for dataset in ledger_spec["datasets"].values() for row in dataset]
+    assert {row["method"] for row in ledger_rows} == {
+        "Hartree–Fock",
+        "VQE",
+        "Exact qubit",
+        "PySCF FCI",
+    }
+
+
+def test_dark_theme_changes_chart_and_circuit_rendering(
+    official_result: ExperimentResult,
+) -> None:
+    light_spec = visuals.convergence_chart(official_result, theme="light").to_dict()
+    dark_spec = visuals.convergence_chart(official_result, theme="dark").to_dict()
+    assert light_spec["config"]["axis"]["labelColor"] == "#6f6f6f"
+    assert dark_spec["config"]["axis"]["labelColor"] == "#a8b2c1"
+
+    theta = Parameter("theta")
+    circuit = QuantumCircuit(2)
+    circuit.h(0)
+    circuit.ry(theta, 1)
+    light_png = visuals.circuit_png(circuit, theme="light")
+    dark_png = visuals.circuit_png(circuit, theme="dark")
+    assert light_png.startswith(b"\x89PNG\r\n\x1a\n")
+    assert dark_png.startswith(b"\x89PNG\r\n\x1a\n")
+    assert light_png != dark_png
+
+
+def test_unknown_visual_theme_is_rejected() -> None:
+    with pytest.raises(ValueError, match="Unknown theme"):
+        visuals._palette("sepia")

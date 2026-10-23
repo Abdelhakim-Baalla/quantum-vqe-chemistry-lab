@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software or its checked-in H2 reference result, please cite it as below."
+title: "Quantum VQE Chemistry Lab"
+abstract: >-
+  A reproducible, open-source laboratory for variational quantum eigensolver
+  experiments in quantum chemistry, with a validated H2/STO-3G reference run,
+  exact diagonalization, independent PySCF FCI checks and a local Streamlit
+  dashboard.
+type: software
+authors:
+  - family-names: Baalla
+    given-names: Abdelhakim
+repository-code: "https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab"
+url: "https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab"
+license: MIT
+version: "0.1.0"
+date-released: "2026-10-23"
+keywords:
+  - variational quantum eigensolver
+  - quantum chemistry
+  - Qiskit
+  - Qiskit Nature
+  - PySCF
+  - molecular hydrogen
+  - reproducibility

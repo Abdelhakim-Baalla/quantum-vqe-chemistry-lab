@@ -28,7 +28,7 @@ quantum-vqe-chemistry-lab/
 │   ├── logic.py           # UI validation, run orchestration, history/exports
 │   └── visuals.py         # real-result charts, molecule and circuit artifacts
 ├── .streamlit/
-│   └── config.toml        # local dark theme and usage-stat privacy setting
+│   └── config.toml        # light-theme baseline and usage-stat privacy setting
 ├── tests/
 │   ├── conftest.py       # small operator/circuit fixtures
 │   ├── unit/             # fast tests, including web logic and AppTest wiring
@@ -41,8 +41,17 @@ quantum-vqe-chemistry-lab/
 │   ├── web_interface.md
 │   ├── experiment_report.md
 │   ├── roadmap.md
-│   └── assets/           # checked-in official JSON result and convergence plot
-├── .github/workflows/ci.yml
+│   ├── assets/           # official result, plots and light/dark screenshots
+│   └── launch/           # final carousel, video, poster, copy and checksums
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   ├── workflows/ci.yml
+│   └── PULL_REQUEST_TEMPLATE.md
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CITATION.cff
+├── CHANGELOG.md
+├── CODE_OF_CONDUCT.md
 ├── pyproject.toml
 ├── README.md
 └── LICENSE
@@ -230,15 +239,44 @@ The Streamlit interface is deliberately separated from the scientific package:
   `run_h2_experiment(config, chemistry=chemistry)`, and handles history and
   export. It imports no Streamlit and can be unit-tested directly.
 - `webapp/visuals.py` derives charts, molecule labels, parameter tables and
-  circuit images from real result records. Circuit drawing is performed during
-  the run, not during later renders, because Qiskit circuit decomposition is not
-  safely reusable across Streamlit's script-run threads in this environment.
-  The resulting PNG bytes and dataframes are stored in `CircuitArtifacts`.
+  circuit images from real result records. It owns both the light and dark
+  palettes and all dashboard datasets/charts. Every dashboard column is a direct
+  transform of the recorded optimizer history: best-so-far is a cumulative
+  minimum, the energy gap uses the run's exact diagonalization value, and step
+  improvement is the reduction of the best-so-far value. No points are
+  interpolated.
+  Circuit drawing is performed during the run, not during later renders, because
+  Qiskit circuit decomposition is not safely reusable across Streamlit's
+  script-run threads in this environment. Light and dark PNG variants are
+  precomputed from the same ansatz and stored in `CircuitArtifacts`.
 
 The optional `chemistry=` argument keeps one chemistry build and one ansatz
 object in the UI path. The default CLI call still builds chemistry inside
 `run_h2_experiment`, so CLI behavior is unchanged. The circuit shown in the UI
 is therefore the executed ansatz, not a second decorative circuit.
+
+### Presentation and theming
+
+`app.py` injects a light editorial palette by default and a dark override when
+the sidebar `theme_mode` widget is set to `Dark`. The preference is stored in
+Streamlit session state; it is not written to the scientific result. The CSS
+variables control page surfaces, headings, metrics, forms, tables and the
+sidebar. Charts receive an explicit `theme` argument and use matching Altair or
+Matplotlib colors. Qiskit circuit PNGs are generated for both themes during the
+run.
+
+The sidebar collapse control is hosted inside Streamlit 1.66's `stToolbar`. An
+earlier stylesheet hid the whole toolbar, which also removed the `stExpandSidebarButton`
+used to reopen the sidebar. The current CSS keeps the toolbar mount point,
+hides the unrelated deploy/menu actions, and pins the expand control to the
+top-left when the sidebar is collapsed.
+
+The **Dashboard** tab is a presentation layer over one `ExperimentResult`. It
+shows twelve summary metrics and six real-data panels: log energy gap, step
+improvement, parameter trajectories, correlation energy ledger, Hamiltonian
+Pauli coefficients and parameter-correlation matrix. A manifest expander exposes
+the ten scientific checks and phase timings. None of these values is hard-coded;
+they are computed from the result JSON and optimizer history.
 
 The web extra installs Streamlit, pandas, Altair and `pylatexenc` (needed by
 Qiskit's Matplotlib circuit drawer). The scientific package has no dependency on
@@ -297,8 +335,8 @@ The suite is split by the `integration` pytest marker:
 
 The integration modules are skipped automatically if PySCF or Streamlit is
 unavailable. CI installs the full `.[dev,web]` extra, so both core and UI tests
-run there. In the tested environment the suite reports 99 unit and 17
-integration tests (116 total), with 89% statement coverage for `quantum_vqe`.
+run there. In the tested environment the suite reports 106 unit and 17
+integration tests (123 total), with 89% statement coverage for `quantum_vqe`.
 
 ## 7. Determinism and reproducibility
 

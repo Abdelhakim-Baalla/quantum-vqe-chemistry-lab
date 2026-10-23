@@ -29,8 +29,10 @@ uv pip install -e ".[dev,web]"
 
 ## 2. What the dashboard contains
 
-The sidebar exposes only options covered by the scientific validation suite:
+The sidebar exposes an **Appearance** switch (Light/Dark, default Light) and
+only options covered by the scientific validation suite:
 
+- appearance: Light or Dark; a session preference, not a scientific setting,
 - molecule: H₂,
 - bond distance: 0.30–5.00 Å,
 - basis: STO-3G,
@@ -41,21 +43,28 @@ The sidebar exposes only options covered by the scientific validation suite:
 - initial point: Hartree–Fock or seeded random,
 - optional output directory for saved JSON.
 
-The five tabs are:
+The six tabs are:
 
-1. **Experiment** — real molecular information, electronic and total energies,
+1. **Dashboard** — twelve run-derived summary metrics and six real-data views:
+   log energy gap to exact diagonalization, step improvement, parameter
+   trajectories, correlation energy ledger, Hamiltonian Pauli coefficients and a
+   parameter-correlation matrix. A manifest expander exposes the ten scientific
+   checks and phase timings. Before a run, it states that no experiment has run
+   and never shows placeholder metrics.
+2. **Experiment** — real molecular information, electronic and total energies,
    absolute error in Ha and mHa, nuclear repulsion, initial energy, evaluation
    count, convergence status, timing, scientific checks and a variational-
    principle explanation.
-2. **Quantum circuit** — the actual UCCSD ansatz used by the run, with qubit
+3. **Quantum circuit** — the actual UCCSD ansatz used by the run, with qubit
    count, depth, gate counts, optimized parameters and three decomposition
-   levels: as built, Pauli evolution, and basis gates.
-3. **Convergence** — an interactive Altair chart of recorded cost-function
+   levels: as built, Pauli evolution, and basis gates. Light and dark PNG
+   variants are generated from the same circuit.
+4. **Convergence** — an interactive Altair chart of recorded cost-function
    evaluations, a best-so-far trace, exact and Hartree–Fock reference lines, and
    a table of the same recorded points.
-4. **History** — completed runs in the current browser session, comparison
+5. **History** — completed runs in the current browser session, comparison
    table, save-to-JSON, and JSON/CSV downloads. No database is used.
-5. **Learn** — concise explanations of qubits, molecular Hamiltonians,
+6. **Learn** — concise explanations of qubits, molecular Hamiltonians,
    fermion-to-qubit mappings, parameterized circuits, classical optimization,
    exact diagonalization, simulation versus hardware, and the variational
    principle.
@@ -64,6 +73,11 @@ The dashboard does not display energy placeholders. Before a run, it states
 that no energies are available. After a run, every displayed energy, error,
 parameter, convergence point and check is read from the `ExperimentResult`
 returned by the scientific layer.
+
+The **Light/Dark** switch changes only presentation. It retints the CSS
+variables, Altair charts, Matplotlib molecule drawing and the precomputed Qiskit
+circuit PNGs. The scientific output, validation status and JSON are identical
+in both themes.
 
 ## 3. Scientific boundary
 
@@ -109,7 +123,7 @@ The interface therefore follows two rules:
    - circuit summary and decomposition counts,
    - parameter table,
    - gate-count table,
-   - PNG diagrams for all three decomposition levels,
+   - light and dark PNG diagrams for all three decomposition levels,
    - text diagram.
 
 On reruns, the circuit tab displays those stored bytes and dataframes. It does
@@ -128,11 +142,14 @@ The web tests are split between fast UI wiring and real execution:
   combinations, delegation to the scientific layer, error propagation,
   milli-Hartree arithmetic, history records, JSON round-trips and collision-safe
   saving.
-- `tests/unit/test_webapp_visuals.py` checks that convergence frames and chart
-  data contain the recorded history exactly, plus molecule labels and real
-  circuit summary/PNG/parameter tables.
-- `tests/unit/test_webapp_app.py` uses Streamlit `AppTest` for startup, absence
-  of fake metrics before a run, real-result display, execution failure,
+- `tests/unit/test_webapp_visuals.py` checks that convergence and dashboard
+  frames contain the recorded history exactly, that derived gaps and step
+  improvements telescope from the real result, that both themes produce
+  different chart/circuit rendering, and that molecule labels, circuit summary
+  and parameter tables are derived from the real circuit.
+- `tests/unit/test_webapp_app.py` uses Streamlit `AppTest` for startup, the
+  Dashboard empty state, absence of fake metrics before a run, theme switching,
+  real-result display and dashboard metrics, execution failure,
   missing-dependency messaging, and save-button wiring.
 - `tests/integration/test_webapp_real_run.py` executes a real H₂ experiment
   through the UI harness, verifies its output against the returned scientific
@@ -145,10 +162,12 @@ Run all tests with:
 .venv/bin/pytest -q
 ```
 
-Graphical browser automation is not available in this environment. Verification
-uses Streamlit's AppTest harness plus a local server startup and health-endpoint
-check. That limitation is stated rather than replaced by an unverified
-screenshot claim.
+The repository test suite uses Streamlit's `AppTest` harness and a real local
+server startup health check. Separate local Playwright QA was used during the
+UI redesign to verify sidebar collapse/reopen, light/dark screenshots and chart
+rendering; it is not a CI gate and does not replace the checked-in AppTest
+coverage. The repository does not yet include automated cross-browser visual
+regression tests.
 
 ## 6. Limitations
 
@@ -165,3 +184,7 @@ screenshot claim.
   not evidence of quantum advantage.
 - `AppTest` exercises the server-side script and widget behavior; it is not a
   substitute for cross-browser visual regression testing.
+- The dark theme is implemented with a project stylesheet over Streamlit's
+  light baseline. A future Streamlit theme API may allow a cleaner native
+  implementation, but the current approach is covered by unit tests for chart
+  palettes and circuit variants plus local visual QA.
