@@ -13,6 +13,36 @@ or quantum hardware is required. A local Streamlit dashboard, **Quantum Lab**,
 exposes the same validated scientific layer for interactive configuration,
 real circuit inspection, convergence analysis and JSON export.
 
+## First result at a glance
+
+The checked-in official run is documented in
+[`docs/experiment_report.md`](docs/experiment_report.md), with the machine
+readable result in
+[`docs/assets/h2_result.json`](docs/assets/h2_result.json) and the convergence
+plot in [`docs/assets/h2_result.png`](docs/assets/h2_result.png). Its measured
+values are:
+
+| Quantity | Value |
+| --- | ---: |
+| Status | **SUCCESS** |
+| VQE total energy | **−1.1373060357533986 Ha** |
+| Exact qubit total energy | −1.137306035753399 Ha |
+| Independent PySCF FCI total | −1.1373060357534004 Ha |
+| Absolute VQE error | **4.440892098500626 × 10⁻¹⁶ Ha** |
+| Qubits / Pauli terms | 2 / 5 |
+| UCCSD parameters | 3 |
+| Optimizer evaluations / iterations | 24 / 4 |
+| Converged | yes |
+
+The run uses H₂ at **0.735 Å**, the **STO-3G** basis, **parity** mapping with
+two-qubit Z2 tapering, a **UCCSD** ansatz with a Hartree–Fock reference,
+**L-BFGS-B**, and Qiskit's exact **`StatevectorEstimator`** (no shots). It
+computes its own numbers; no energy is hard-coded into the experiment.
+
+This is a validation result, not a claim of quantum advantage: the two-qubit
+Hamiltonian is classically trivial. The project demonstrates the complete
+workflow and its independent checks, not hardware performance.
+
 ## Quick start
 
 The project targets Python 3.11 and 3.12. The tested environment is Python
