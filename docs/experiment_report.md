@@ -228,3 +228,80 @@ The status is `success` because no check is `False`. A `None` value would mean
 "not applicable" (for example, the parity/JW cross-check in a Jordan–Wigner
 run) and would not count as a pass.
 
+## 10. Phase timings
+
+| Phase | Time (s) |
+| --- | ---: |
+| Chemistry (PySCF integrals, mapping, UCCSD construction) | 0.17216657707467675 |
+| Exact diagonalization | 0.00022521300707012415 |
+| PySCF FCI | 0.23108672793023288 |
+| Full Jordan–Wigner diagonalization | 0.0004148520529270172 |
+| VQE optimization | 0.19616324407979846 |
+| Plot | 0.15403200406581163 |
+| **Total** | **0.6320048500783741** |
+
+These timings are for this machine and this exact run; they are not benchmark
+claims.
+
+## 11. Verification performed
+
+The following commands were executed in the project environment.
+
+```bash
+# Fast unit tests
+.venv/bin/pytest -q -m "not integration"
+
+# Real H2/PySCF/Qiskit/CLI integration tests
+.venv/bin/pytest -q -m integration
+
+# Lint and formatting
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+```
+
+At the time of this report, the suite reports **99 passed** for the unit tests
+and **17 passed** for the integration tests (116 total), with **89% statement
+coverage**. CLI subprocess behavior and the server-side Streamlit AppTest harness are
+tested directly but are not attributed to the in-process coverage total. The integration suite covers:
+
+- the default H₂ run and all scientific checks,
+- molecular dimensions and nuclear repulsion,
+- agreement with exact, FCI and full-JW references,
+- JSON round-trip and convergence plotting,
+- all five supported optimizers,
+- parity mapping with and without two-qubit reduction,
+- Jordan–Wigner mapping,
+- CLI JSON/plot output and exit codes,
+- rejection of invalid distance and invalid `--reduce`/JW combinations,
+- Streamlit `AppTest` startup, validation, failure and export wiring,
+- a real H₂ experiment executed through the local UI, with its actual circuit
+  artifacts and displayed metrics checked against the scientific result.
+
+Graphical browser automation was not available in this environment. The UI was
+verified with Streamlit's server-side `AppTest` harness, and the local server
+was started on `127.0.0.1` and checked through its `/_stcore/health` endpoint
+and HTTP page response. This is stronger than a screenshot-only check for
+execution behavior, but it is not a cross-browser visual regression test.
+
+Additional smoke runs executed for this report:
+
+| Run | Result |
+| --- | --- |
+| CLI default with JSON and plot | SUCCESS, 2 qubits |
+| CLI Jordan–Wigner | SUCCESS, 4 qubits, 15 Pauli terms, error \(4.441\times10^{-16}\) Ha |
+| CLI BFGS | SUCCESS, 20 evaluations, error \(3.553\times10^{-15}\) Ha |
+| CLI seeded random start (`--seed 11`) | SUCCESS, 36 evaluations, error \(2.618\times10^{-12}\) Ha |
+| `python examples/run_h2.py` | SUCCESS, wrote JSON and PNG under `results/` |
+| Invalid distance and invalid `--reduce` with JW | exit code 2, clear error message |
+
+The exact commands and final results are also listed in the top-level README.
+
+## 12. Known warnings
+
+The integration suite emits upstream `DeprecationWarning`s from Qiskit Nature
+0.8: its `BlueprintCircuit` and `NLocal` subclasses are deprecated in Qiskit
+2.1 and will be removed in Qiskit 3.0. The warnings come from library code, do
+not affect the computed energies or checks, and are not suppressed by this
+project. They are recorded here so a future dependency upgrade can address
+them rather than having them appear as an unexplained test failure.
+
