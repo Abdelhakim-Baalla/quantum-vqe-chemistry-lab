@@ -156,3 +156,75 @@ excited energy of `-1.2563390730032498` Ha and a gap of
 `0.60093595719913` Ha. These gaps are recorded in the JSON and are not used as
 VQE targets; the experiment is a ground-state calculation.
 
+## 7. Error analysis
+
+| Error | Value (Ha) | Meaning |
+| --- | ---: | --- |
+| `absolute_vqe_vs_exact_total` | \(4.440892098500626\times10^{-16}\) | headline VQE accuracy |
+| `signed_variational_gap_electronic` | \(+6.661338147750939\times10^{-16}\) | VQE above exact by numerical noise |
+| `absolute_exact_vs_pyscf_fci_total` | \(1.3322676295501878\times10^{-15}\) | mapping/integral cross-check |
+| `absolute_hf_vs_pyscf_rhf_electronic` | \(4.440892098500626\times10^{-16}\) | HF reference cross-check |
+| `absolute_parity_vs_full_jw_electronic` | \(8.881784197001252\times10^{-16}\) | reduction cross-check |
+
+The signed variational gap is positive, as required for an approximate trial
+state. It is \(6.66\times10^{-16}\) Ha, which is below the `1e-8` Ha
+variational tolerance and is floating-point noise, not a physical violation.
+
+The absolute VQE error is \(4.44\times10^{-16}\) Ha, about ten orders of
+magnitude below the `1e-6` Ha target. This is expected here: the UCCSD ansatz
+can represent the exact ground state of this two-electron, two-orbital problem,
+and the simulator is exact. The result should not be read as "VQE is always
+this accurate"; it is a best-case validation of the implementation.
+
+## 8. Optimization behavior
+
+| Field | Value |
+| --- | --- |
+| Optimizer | L-BFGS-B |
+| Initial energy | −1.8369679912029833 Ha |
+| Final energy | −1.8572750302023782 Ha |
+| Energy decrease | 0.0203070389993949 Ha |
+| Initial parameters | `[0.0, 0.0, 0.0]` |
+| Final parameters | `[2.34784170419411e-09, -2.599610718135767e-08, -0.11176850357089839]` |
+| Converged | `true` |
+| SciPy success | `true` |
+| Message | `CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH` |
+| Status code | `0` |
+| `nfev` | 24 |
+| `nit` | 4 |
+| `njev` | 6 |
+| Recorded evaluations | 24 |
+| VQE wall time | 0.19616324407979846 s |
+
+The two single-excitation angles remain at approximately \(2.3\times10^{-9}\)
+and \(-2.6\times10^{-8}\) rad. The double-excitation angle is
+\(-0.11176850357089839\) rad and carries essentially all of the correlation
+energy. This is consistent with Brillouin's theorem for the RHF reference.
+
+The optimization history contains 24 cost-function calls. Some are
+finite-difference probes or line-search trial points and can be worse than the
+current best (for example, evaluation 4 is about −0.8744 Ha). The convergence
+plot therefore shows the raw evaluations together with a best-so-far curve;
+the best-so-far curve is monotone and ends at the exact energy.
+
+## 9. Scientific checks
+
+All ten checks passed:
+
+| Check | Result |
+| --- | --- |
+| `hamiltonian_is_hermitian` | PASS |
+| `ansatz_qubit_count_matches_hamiltonian` | PASS |
+| `mapped_qubit_count_matches_configuration` | PASS |
+| `optimizer_converged` | PASS |
+| `optimizer_reduced_energy` | PASS |
+| `variational_principle` | PASS |
+| `energy_accuracy_target_met` | PASS |
+| `hf_matches_pyscf_rhf` | PASS |
+| `exact_matches_pyscf_fci` | PASS |
+| `parity_reduction_matches_full_jw` | PASS |
+
+The status is `success` because no check is `False`. A `None` value would mean
+"not applicable" (for example, the parity/JW cross-check in a Jordan–Wigner
+run) and would not count as a pass.
+
