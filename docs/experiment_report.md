@@ -305,3 +305,82 @@ not affect the computed energies or checks, and are not suppressed by this
 project. They are recorded here so a future dependency upgrade can address
 them rather than having them appear as an unexplained test failure.
 
+## 13. What is implemented, executed, tested, and unverified
+
+### Implemented
+
+- PySCF/Qiskit Nature integral generation for H₂/STO-3G.
+- Parity and Jordan–Wigner mappings, with optional two-qubit parity reduction.
+- UCCSD ansatz with Hartree–Fock reference.
+- Explicit VQE loop with `StatevectorEstimator`, SciPy optimizers and complete
+  evaluation history.
+- Exact diagonalization, full-JW cross-check and independent PySCF RHF + FCI.
+- Scientific checks, conservative status logic, JSON schema, atomic save/load,
+  convergence plotting and CLI.
+- Local Streamlit dashboard with real experiment execution, actual circuit
+  rendering, convergence analysis, session history, JSON/CSV export and
+  learning mode.
+- Unit and integration tests, example script, CI workflow and documentation.
+
+### Executed
+
+- The official H₂ run whose numbers appear in this report.
+- The full unit and integration test suites.
+- Lint and format checks.
+- CLI variants for JSON/plot output, Jordan–Wigner mapping, optimizer selection
+  and invalid-input handling.
+- A real H₂ experiment through Streamlit `AppTest`, including circuit artifact
+  generation and a normal post-run rerun.
+- Local Streamlit server startup on `127.0.0.1`, with `/_stcore/health` and the
+  HTTP page response checked.
+
+### Tested
+
+- Hermiticity, qubit counts, variational principle, energy bookkeeping,
+  optimizer convergence, reference agreement and no-false-success status logic.
+- Determinism of the default Hartree–Fock start and reproducibility of seeded
+  random starts.
+- JSON schema validation and plotting output.
+- Streamlit `AppTest` startup, validation, failure and export wiring, plus a
+  real result rendered through the UI and a real-UI-run integration test.
+
+### Unverified / out of scope
+
+- **Graphical browser automation.** No browser automation was available. The
+  server-side UI harness and localhost health/page checks were used instead; no
+  cross-browser screenshot or layout-regression claim is made.
+- **GitHub Actions execution.** The workflow file is present and its commands
+  pass locally, but this environment has no remote GitHub Actions run to
+  inspect.
+- **Quantum hardware.** No IBM Quantum account, cloud service, hardware,
+  shot noise, gate error, decoherence or readout error is used.
+- **Shot-based simulation.** The estimator is exact statevector; finite-shot
+  statistics are not studied.
+- **Other molecules, basis sets and bond lengths.** The CLI accepts a basis and
+  distance, but only H₂/STO-3G at 0.735 Å is validated by the official run and
+  the integration assertions.
+- **Excited states, dynamics and finite temperature.** Only the electronic
+  ground state is computed.
+- **Global optimality on non-trivial problems.** The optimizer is local and
+  the ansatz is fixed.
+- **QAOA Max-Cut.** Not implemented in this version; it is listed as future
+  work in [`docs/roadmap.md`](roadmap.md).
+- **Quantum advantage.** Not claimed and not possible to demonstrate with this
+  classically trivial two-qubit problem.
+
+## 14. Reproduction notes
+
+A fresh environment can reproduce the workflow with:
+
+```bash
+uv venv --python 3.12
+source .venv/bin/activate
+uv pip install -e ".[dev,web]"
+python -m quantum_vqe run-h2 --distance 0.735 --basis sto3g --plot
+```
+
+Last-bit floating-point values may differ across BLAS/LAPACK builds, Python
+patch versions or package versions. The JSON records the versions used for this
+run so such differences are visible. The scientific checks use tolerances of
+`1e-6` Ha for references and `1e-8` Ha for the variational principle, not
+bitwise equality.
