@@ -50,3 +50,54 @@ value is the complete, reproducible workflow and the independent checks.
 The JSON contains the full optimization history, all Pauli terms, all checks,
 the resolved tolerances, phase timings and software versions.
 
+## 3. Environment
+
+The run was executed in the project's isolated Python 3.12 environment:
+
+| Component | Version |
+| --- | --- |
+| Python | 3.12.14 (CPython) |
+| Platform | Linux 7.2.5-3-omarchy, x86_64, glibc 2.44 |
+| `quantum-vqe-chemistry-lab` | 0.1.0 |
+| Qiskit | 2.6.1 |
+| Qiskit Nature | 0.8.0 |
+| Qiskit Algorithms | 0.4.0 |
+| PySCF | 2.14.0 |
+| NumPy | 2.5.4 |
+| SciPy | 1.18.1 |
+| Matplotlib | 3.11.2 |
+
+Qiskit Algorithms is installed in the environment and recorded by the version
+collector, but the VQE loop itself is implemented directly in
+`src/quantum_vqe/vqe.py`; it does not use `qiskit_algorithms`' VQE class.
+
+The local dashboard was tested with Streamlit 1.66.1, pandas 2.3.3, Altair 6.3.0
+and `pylatexenc` 2.11. These are UI-layer dependencies; the official energy
+run does not depend on them.
+
+The exact Python executable path is recorded in the JSON for local
+reproducibility.
+
+## 4. Command
+
+From the project root:
+
+```bash
+.venv/bin/python -m quantum_vqe run-h2 \
+  --distance 0.735 \
+  --basis sto3g \
+  --json docs/assets/h2_result.json \
+  --plot
+```
+
+This resolves to the default parity mapping with two-qubit reduction, UCCSD,
+L-BFGS-B, tolerance `1e-8`, Hartree–Fock initial point and seed 7. The resolved
+configuration is stored in the `config` section of the JSON, so the defaults
+cannot silently drift from the report.
+
+The installed console entry point is equivalent:
+
+```bash
+quantum-vqe run-h2 --distance 0.735 --basis sto3g
+```
+
