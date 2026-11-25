@@ -1,5 +1,7 @@
 # Quantum VQE Chemistry Lab
 
+[Replay the recorded H₂ experiment](https://baalla-quantum-vqe.abdelhakimbaalla50.workers.dev/) and step through each optimizer evaluation. The browser replays the stored results. To rebuild the replay, use `python3 docs/demo/build.py` and `npx wrangler deploy` from the repository root.
+
 [Résultats de l’expérience H₂](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/blob/main/docs/experiment_report.md)
 
 [![CI](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/actions/workflows/ci.yml)
