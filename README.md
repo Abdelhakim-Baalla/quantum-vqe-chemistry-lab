@@ -1,5 +1,7 @@
 # Quantum VQE Chemistry Lab
 
+[Résultats de l’expérience H₂](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/blob/main/docs/experiment_report.md)
+
 [![CI](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/actions/workflows/ci.yml)
 [![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](https://github.com/Abdelhakim-Baalla/quantum-vqe-chemistry-lab/blob/main/pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
